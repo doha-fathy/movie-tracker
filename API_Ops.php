@@ -186,56 +186,6 @@ function tmdbRequest($url) {
 }
 
 
-// function getMovieDetails($params, $endpoint) {
-//     $baseUrl = getenv('BASE_URL');  
-//     $apiKey  = getenv('API_KEY');
-
-//     $id = $params['id'] ?? null;
-//     if (!$id) {
-//         respond(false, null, "Movie ID is required");
-//     }
-//     if (!is_numeric($id)) {
-//         respond(false, null, "Invalid Movie ID");
-//     }
-
-//     $language = $params['language'] ?? 'en-US';
-//     $append = $params['append'] ?? 'videos,credits,recommendations,reviews,similar';
-
-//     $url = $baseUrl . "/" . $endpoint . "/" . $id .
-//         "?api_key=" . $apiKey .
-//         "&language=" . urlencode($language) .
-//         "&append_to_response=" . urlencode($append);
-
-//     $ch = curl_init();
-
-//     curl_setopt_array($ch, [
-//         CURLOPT_URL => $url,
-//         CURLOPT_RETURNTRANSFER => true,
-//         CURLOPT_HTTPHEADER => [
-//             "Accept: application/json"
-//         ]
-//     ]);
-
-//     $response = curl_exec($ch);
-//     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-//     curl_close($ch);
-
-//     if ($response === false || $httpCode !== 200) {
-//         respond(false, null, "Failed to fetch movie details");
-//     }
-
-//     $data = json_decode($response, true);
-
-//     if (!$data) {
-//         respond(false, null, "Invalid API response");
-//     }
-
-//     respond(true, $data);
-// }
-
-
-
 function getMovieList($params, $endpoint) {
 
     $endpoint = injectPathParam($endpoint, $params);
