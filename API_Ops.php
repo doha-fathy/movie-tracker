@@ -175,7 +175,7 @@ function buildTmdbUrl($endpoint, $params = []) {
         . "?api_key=" . $apikey
         . "&" . http_build_query($params);
 
-    var_dump($url);
+    // var_dump($url);
     return $url;
 }
 
