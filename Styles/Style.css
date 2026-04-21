@@ -1,0 +1,13 @@
+.custom-scroll-actors::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scroll-actors::-webkit-scrollbar-thumb {
+  background: #F87171; 
+  border-radius: 10px;
+}
+
+.custom-scroll-actors::-webkit-scrollbar-thumb:hover {
+  background: #e16767; 
+}
