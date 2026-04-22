@@ -45,6 +45,7 @@ class WatchlistOps
 
         if (!$userId || !$movieId) {
             return ["error" => "Invalid data"];
+            return ["error" => "Invalid data"];
         }
 
         try {
@@ -88,7 +89,10 @@ class UserOps
             $stmt->execute(["username" => $username]);
 
             if ($stmt->fetch()) {
-                return ["error" => "This username is already in use. Try a different one."];
+                return [
+                    "success" => false,
+                    "message" => "Username already exists"
+                ];
             }
 
             // Check email
@@ -96,7 +100,10 @@ class UserOps
             $stmt->execute(["email" => $email]);
 
             if ($stmt->fetch()) {
-                return ["error" => "An account with this email already exists."];
+                return [
+                    "success" => false,
+                    "message" => "Email already exists"
+                ];
             }
 
             // Insert
@@ -114,11 +121,21 @@ class UserOps
                 "photo" => $photo
             ]);
 
-            return ["success" => true, "message" => "Account created successfully."];
+            $userId = $this->connection->lastInsertId();
+
+            return [
+                "success" => true,
+                "message" => "Account created successfully",
+                "data" => [
+                    "lastInsertId" => $userId
+                ]
+            ];
         } catch (PDOException $e) {
 
-            error_log($e->getMessage());
-            return ["error" => "Something went wrong. Please try again later."];
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
         }
     }
 
@@ -129,7 +146,10 @@ class UserOps
     {
         $id = filter_var($id, FILTER_VALIDATE_INT);
         if ($id === false) {
-            return ["error" => "Invalid user ID."];
+            return [
+                "success" => false,
+                "message" => "Invalid user ID"
+            ];
         }
 
         try {
@@ -143,7 +163,10 @@ class UserOps
             ]);
 
             if ($stmt->fetch()) {
-                return ["error" => "This username is already taken."];
+                return [
+                    "success" => false,
+                    "message" => "Username already taken"
+                ];
             }
 
             // Check email
@@ -156,7 +179,10 @@ class UserOps
             ]);
 
             if ($stmt->fetch()) {
-                return ["error" => "This email is already in use."];
+                return [
+                    "success" => false,
+                    "message" => "Email already in use"
+                ];
             }
 
             // Update
@@ -178,10 +204,16 @@ class UserOps
                 "photo" => $photo
             ]);
 
-            return ["success" => true, "message" => "Profile updated successfully"];
+            return [
+                "success" => true,
+                "message" => "Profile updated successfully"
+            ];
         } catch (PDOException $e) {
-            error_log($e->getMessage());
-            return ["error" => "Unable to update profile. Please try again"];
+
+            return [
+                "success" => false,
+                "message" => "Unable to update profile. Please try again"
+            ];
         }
     }
     //-----------------------------------------------------------------------------------------------
@@ -226,11 +258,18 @@ class UserOps
     {
         $id = filter_var($id, FILTER_VALIDATE_INT);
         if ($id === false) {
-            return ["error" => "Invalid user ID."];
+            return [
+                "success" => false,
+                "message" => "Invalid user ID."
+            ];
         }
 
         if (empty($oldPassword) || empty($newPassword)) {
-            return ["error" => "Password fields cannot be empty."];
+            return
+                [
+                    "success" => false,
+                    "message" => "Password fields cannot be empty."
+                ];
         }
 
 
@@ -242,7 +281,10 @@ class UserOps
 
         // Verify old password (CRITICAL for security)
         if (!password_verify($oldPassword, $user['password_hash'])) {
-            return ["error" => "Current password is incorrect."];
+            return [
+                "success" => false,
+                "message" => "Current password is incorrect."
+            ];
         }
 
         try {
@@ -258,13 +300,22 @@ class UserOps
 
             // Check if update actually happened
             if ($stmt->rowCount() === 0) {
-                return ["error" => "Password was not updated."];
+
+                return [
+                    "success" => false,
+                    "message" => "Password was not updated."
+                ];
             }
 
-            return ["success" => true, "message" => "Password updated successfully."];
+            return [
+                "success" => true,
+                "message" => "Password updated successfully."
+            ];
         } catch (PDOException $e) {
-            error_log($e->getMessage());
-            return ["error" => "Database error. Please try again."];
+            return [
+                "success" => false,
+                "message" => "Database error. Please try again."
+            ];
         }
     }
 }
