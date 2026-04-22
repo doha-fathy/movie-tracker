@@ -4,10 +4,10 @@
 }
 
 .custom-scroll-actors::-webkit-scrollbar-thumb {
-  background: #F87171; 
+  background: #e13180; 
   border-radius: 10px;
 }
 
 .custom-scroll-actors::-webkit-scrollbar-thumb:hover {
-  background: #e16767; 
+  background: #a51f5c; 
 }

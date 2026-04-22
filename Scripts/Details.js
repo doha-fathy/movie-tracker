@@ -36,13 +36,13 @@ async function loadMovie(movieId) {
   }
 
   detailsContent.innerHTML = `
-  <div
-  class="pt-16 bg-cover bg-center text-white bg-[linear-gradient(to_right,rgba(27,9,8,0.9),rgba(27,9,8,0.7)),url('${movie.backdrop}')]"
-  >
-  <div class="p-6 w-full lg:w-[95%] mx-auto">
-  <div class="flex flex-col lg:flex-row flex-wrap">
-  <div class="w-full lg:w-1/3 mt-3 relative flex justify-center">
-  <div class="w-[340px] rounded-xl shadow-[1px_1px_15px_#FEE2FE]">
+                     <div
+                  class="pt-16 bg-cover bg-center text-white bg-[linear-gradient(to_right,rgba(27,9,8,0.9),rgba(27,9,8,0.7)),url('${movie.backdrop}')]"
+                  >
+                  <div class="p-6 w-full lg:w-[95%] mx-auto">
+                  <div class="flex flex-col lg:flex-row flex-wrap">
+                  <div class="w-full lg:w-1/3 mt-3 relative flex justify-center">
+                  <div class="w-[340px] rounded-xl shadow-[1px_1px_15px_#FEE2FE]">
                 <img
                 src=${movie.poster}
                 alt="Movie Image"
@@ -71,10 +71,10 @@ async function loadMovie(movieId) {
                 </div>
                 <div class="flex gap-3 items-center">
                 <div
-                class="w-14 h-14 bg-red-400 rounded-full flex justify-center items-center"
+                class="w-14 h-14 bg-[#C1246B] rounded-full flex justify-center items-center"
                 >
                 <div
-                class="w-12 h-12 bg-white rounded-full flex justify-center items-center text-red-500 font-bold"
+                class="w-12 h-12 bg-white rounded-full flex justify-center items-center text-[#C1246B] font-bold"
                 >
                 ${rating}
                 </div>
@@ -83,13 +83,13 @@ async function loadMovie(movieId) {
                 </div>
                 <div class="flex gap-5">
                 <div
-                class="bg-red-400 h-10 w-10 rounded-full flex justify-center items-center hover:cursor-pointer hover:text-red-400 hover:bg-white transition-all duration-300"
+                class="bg-[#C1246B] h-10 w-10 rounded-full flex justify-center items-center hover:cursor-pointer hover:text-[#C1246B] hover:bg-white transition-all duration-300"
                 title="Add to Favorite"
                   >
                   <i class="fa-solid fa-heart"></i>
                   </div>
                   <div
-                  class="bg-red-400 h-10 w-10 rounded-full flex justify-center items-center hover:cursor-pointer hover:text-red-400 hover:bg-white transition-all duration-300"
+                  class="bg-[#C1246B] h-10 w-10 rounded-full flex justify-center items-center hover:cursor-pointer hover:text-[#C1246B] hover:bg-white transition-all duration-300"
                   title="Add to Watch List"
                   >
                   <i class="fa-solid fa-bookmark"></i>
@@ -137,7 +137,7 @@ async function loadMovie(movieId) {
 
               <button
                 id="showMoreBtn"
-                class="group flex gap-2 hover:text-red-700 text-red-600 items-center text-lg hover:bg-red-100 rounded-lg py-1 px-3 w-fit transition-all duration-300"
+                class="group flex gap-2 hover:text-black text-[#C1246B] items-center text-lg hover:shadow-[2px_2px_20px_#ff95c5d4] hover:bg-gray-100/25 rounded-lg py-1 px-3 w-fit transition-all duration-300"
               >
                 <p>Show More</p>
                 <i
@@ -152,13 +152,13 @@ async function loadMovie(movieId) {
               <textarea
                 id="reviewInput"
                 placeholder="Write your review..."
-                class="w-full p-4 rounded-lg border border-gray-300 resize-none focus:shadow-[2px_2px_15px_#F8717199] focus:ring-1 focus:outline-none focus:ring-[#F87171]"
+                class="w-full p-4 rounded-lg border border-gray-300 resize-none focus:shadow-[2px_2px_20px_#fe90c1] focus:ring-1 focus:outline-none focus:ring-[#F87171]"
                 rows="5"
               ></textarea>
 
               <button
                 type="submit"
-                class="w-fit px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-white hover:text-red-600 hover:border hover:border-[#F87171] transition-all duration-300"
+                class="w-fit px-5 py-2 bg-[#C1246B] hover:border-[#E13661] text-white rounded-lg hover:bg-white hover:text-[#E13661] border border-transparent transition-all duration-300"
               >
                 Add Review
               </button>
@@ -171,14 +171,14 @@ async function loadMovie(movieId) {
         class="flex gap-6 border-b border-gray-300/50 mb-6 mt-12 justify-center pb-2"
       >
         <button
-          class="tab-btn px-4 py-2 font-semibold text-lg bg-red-300 rounded-2xl border border-red-400/25 hover:bg-white hover:text-red-500 transition-all duration-300"
+          class="tab-btn px-4 py-2 font-semibold text-lg bg-[#C1246B] text-white rounded-2xl border border-red-400/25 hover:bg-white hover:text-[#C1246B] transition-all duration-300"
           data-tab="similar"
         >
           Similar Movies
         </button>
 
         <button
-          class="tab-btn px-4 py-2 font-semibold text-lg bg-red-200/50 rounded-2xl border border-red-400/25 hover:bg-white hover:text-red-500 transition-all duration-300"
+          class="tab-btn px-4 py-2 font-semibold text-lg bg-red-200/50 text-black rounded-2xl border border-red-400/25 hover:bg-white hover:text-[#C1246B] transition-all duration-300"
           data-tab="recommendations"
         >
           Recommendations
@@ -243,15 +243,15 @@ async function loadMovie(movieId) {
                         src="${actor.profile || "Images/actorPlaceholder.jpg"}"
                         class="w-48 h-48 rounded-full object-cover mx-auto"
                       />
-                      <p class="mt-2 font-semibold text-sm">${actor.name}</p>
+                      <p class="mt-2 font-semibold text-sm text-white">${actor.name}</p>
                       <p class="text-gray-500 text-xs italic">${actor.character}</p>
                     </div>`;
   });
 
   similarMovies.map((movie) => {
     const similarRating = formatRating(movie.rating);
-    similarDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer">
-            <div class="flex flex-col relative">
+    similarDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
+            <div class="flex flex-col relative rounded-2xl">
               <div
                 class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden"
               >
@@ -267,7 +267,7 @@ async function loadMovie(movieId) {
                 <p class="font-bold text-xl">${movie.title}</p>
                 <p class="font-bold text-xl">
                   <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
-                  <span class="text-red-500 font-bold text-xl">${similarRating}</span>
+                  <span class="text-[#E13661] font-bold text-xl">${similarRating}</span>
                 </p>
                 <button class="flex items-center showDetailsBtn" data-movie-id=${movie.id}>
                   Show Details
@@ -280,8 +280,8 @@ async function loadMovie(movieId) {
 
   recommendations.map((movie) => {
     const recommendationRating = formatRating(movie.rating);
-    recommendationsDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer">
-            <div class="flex flex-col relative">
+    recommendationsDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
+            <div class="flex flex-col relative rounded-2xl">
               <div
                 class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden"
               >
@@ -297,7 +297,7 @@ async function loadMovie(movieId) {
                 <p class="font-bold text-xl">${movie.title}</p>
                 <p class="font-bold text-xl">
                   <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
-                  <span class="text-red-500 font-bold text-xl">${recommendationRating}</span>
+                  <span class="text-[#E13661] font-bold text-xl">${recommendationRating}</span>
                 </p>
                 <button class="flex items-center showDetailsBtn" data-movie-id=${movie.id}>
                   Show Details
@@ -386,12 +386,12 @@ async function loadMovie(movieId) {
       document.getElementById(target).classList.remove("hidden");
 
       tabs.forEach((tab) => {
-        tab.classList.remove("bg-red-300");
-        tab.classList.add("bg-red-200/50");
+        tab.classList.remove("bg-[#C1246B]","text-white");
+        tab.classList.add("bg-red-200/50","text-bleck");
       });
 
-      tab.classList.add("bg-red-300");
-      tab.classList.remove("bg-red-200/50");
+      tab.classList.add("bg-[#C1246B]" , "text-white");
+      tab.classList.remove("bg-red-200/50" , "text-black");
     });
   });
 }
