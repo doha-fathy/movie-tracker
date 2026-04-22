@@ -1,5 +1,40 @@
 <?php
-require_once "Database.php";
+
+class Database
+{
+    private $connection;
+
+    public function __construct()
+    {
+        try {
+            $env = parse_ini_file(__DIR__ . '/.env');
+
+            $this->connection = new PDO(
+                "mysql:host={$env['DB_HOST']};dbname={$env['DB_NAME']};charset=utf8mb4",
+                $env['DB_USER'],
+                $env['DB_PASS'],
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                ]
+            );
+        } catch (PDOException $e) {
+            // die("Database connection failed");
+
+            echo json_encode([
+                "success" => false,
+                "error" => "Database connection failed"
+            ]);
+            exit;
+        }
+    }
+
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+}
+
+//======================================================================
 
 class WatchlistOps
 {
@@ -11,16 +46,42 @@ class WatchlistOps
         $this->connection = $database->getConnection();
     }
 
+
+
+    // -------------------- HELPERS --------------------
+
+    private function success($data = null, $message = null)
+    {
+        return [
+            "success" => true,
+            "data" => $data,
+            "message" => $message
+        ];
+    }
+
+    private function error($message)
+    {
+        return [
+            "success" => false,
+            "message" => $message
+        ];
+    }
+
+    private function sanitizeArray($array)
+    {
+        return array_map(function ($item) {
+            return array_map('htmlspecialchars', $item);
+        }, $array);
+    }
+
+    // -------------------- READ --------------------
     public function getUserMovies($userId)
     {
 
         $userId = filter_var($userId, FILTER_VALIDATE_INT);
 
         if (!$userId) {
-            return [
-                "success" => false,
-                "message" => "Invalid user id "
-            ];
+            return $this->error("Invalid user. Please log in again.");
         }
 
         try {
@@ -33,15 +94,16 @@ class WatchlistOps
             $statement->execute(["user_id" => $userId]);
 
             $movies = $statement->fetchAll(PDO::FETCH_ASSOC);
-            return [
-                "success" => true,
-                "movies" => $movies
-            ];
+
+            $movies = $this->sanitizeArray($movies);
+
+            if (empty($movies)) {
+                return $this->success([], "Your watchlist is empty.");
+            }
+
+            return $this->success($movies);
         } catch (PDOException $e) {
-            return [
-                "success" => false,
-                "message" => "Database error"
-            ];
+            return $this->error("Something went wrong while fetching your watchlist. Please try again.");
         }
     }
 
@@ -53,10 +115,7 @@ class WatchlistOps
         $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
 
         if (!$userId || !$movieId) {
-            return [
-                "success" => false,
-                "message" => "Invalid data"
-            ];
+            return $this->error("Invalid request. Please try again.");
         }
 
         try {
@@ -67,21 +126,12 @@ class WatchlistOps
             $statement->execute(["user_id" => $userId, "movie_id" => $movieId]);
 
             if ($statement->rowCount() > 0) {
-                return [
-                    "success" => true,
-                    "message" => "Movie removed successfully"
-                ];
+                return $this->success(null, "Movie removed from your watchlist.");
             } else {
-                return [
-                    "success" => false,
-                    "message" => "Movie not found in watchlist"
-                ];
+                return $this->success(null, "Nothing to remove. Movie was not in your watchlist.");
             }
         } catch (PDOException $e) {
-            return [
-                "success" => false,
-                "message" => "Database error"
-            ];
+            return $this->error("Unable to process your request right now.");
         }
     }
 
@@ -94,10 +144,11 @@ class WatchlistOps
         $tmdb_id = $movieData['data-id'] ?? null;
 
         if (!$userId || !$tmdb_id) {
-            return [
-                "success" => false,
-                "message" => "Invalid data"
-            ];
+            return $this->error("Invalid request. Please try again.");
+        }
+
+        if (empty($movieData['title'])) {
+            return $this->error("Missing required movie information.");
         }
 
         try {
@@ -140,27 +191,19 @@ class WatchlistOps
                 "movie_id" => $movieId
             ]);
 
-            return [
-                "success" => true,
-                "message" => "Movie added to watchlist"
-            ];
+            return $this->success(null, "Movie added to your watchlist.");
         } catch (PDOException $e) {
 
             if ($e->getCode() == 23000) {
-                return [
-                    "success" => false,
-                    "message" => "Movie already in watchlist"
-                ];
+                return $this->error("This movie is already in your watchlist.");
             }
 
-            return [
-                "success" => false,
-                "message" => "Database error"
-            ];
+            return $this->error("Unable to process your request right now.");
         }
     }
 }
 
+//======================================================================
 
 class UserOps
 {
@@ -172,31 +215,62 @@ class UserOps
         $this->connection = $database->getConnection();
     }
 
+    // -------------------- HELPERS --------------------
+
+    private function success($data = null, $message = null)
+    {
+        return [
+            "success" => true,
+            "data" => $data,
+            "message" => $message
+        ];
+    }
+
+    private function error($message)
+    {
+        return [
+            "success" => false,
+            "message" => $message
+        ];
+    }
+
+    private function sanitize($data)
+    {
+        return htmlspecialchars($data);
+    }
+
     public function createUser($first, $last, $username, $email, $password, $photo = "uploads/default.png")
     {
+        if (empty($username) || empty($email) || empty($password)) {
+            return $this->error("All required fields must be filled.");
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->error("Please enter a valid email address.");
+        }
+
+        /*  if (strlen($password) < 6) {
+            return $this->error("Password must be at least 6 characters.");
+        }*/
 
         try {
-            // Check username
+            // Username check
             $stmt = $this->connection->prepare("SELECT id FROM users WHERE username = :username");
             $stmt->execute(["username" => $username]);
 
             if ($stmt->fetch()) {
-                return [
-                    "success" => false,
-                    "message" => "Username already exists"
-                ];
+                return $this->error("This username is already taken.");
             }
 
-            // Check email
+
+            // Email check
             $stmt = $this->connection->prepare("SELECT id FROM users WHERE email = :email");
             $stmt->execute(["email" => $email]);
 
             if ($stmt->fetch()) {
-                return [
-                    "success" => false,
-                    "message" => "Email already exists"
-                ];
+                return $this->error("This email is already registered.");
             }
+
 
             // Insert
             $stmt = $this->connection->prepare(
@@ -205,9 +279,9 @@ class UserOps
             );
 
             $stmt->execute([
-                "first" => $first,
-                "last" => $last,
-                "username" => $username,
+                "first" => $this->sanitize($first),
+                "last" => $this->sanitize($last),
+                "username" => $this->sanitize($username),
                 "email" => $email,
                 "password" => password_hash($password, PASSWORD_DEFAULT),
                 "photo" => $photo
@@ -215,36 +289,42 @@ class UserOps
 
             $userId = $this->connection->lastInsertId();
 
-            return [
-                "success" => true,
-                "message" => "Account created successfully",
-                "data" => [
-                    "lastinsertid" => $userId
-                ]
-            ];
+            return $this->success(
+                ["lastinsertid" => $userId],
+                "Account created successfully."
+            );
         } catch (PDOException $e) {
-
-            return [
-                "success" => false,
-                "message" => "Database error"
-            ];
+            return $this->error("Unable to create account. Please try again later.");
         }
     }
 
 
     //-----------------------------------------------------------------------------------------------
-
     public function updateUser($id, $first, $last, $username, $email, $photo)
     {
         $id = filter_var($id, FILTER_VALIDATE_INT);
-        if ($id === false) {
-            return [
-                "success" => false,
-                "message" => "Invalid user ID"
-            ];
+
+        if (!$id) {
+            return $this->error("Invalid user. Please try again.");
+        }
+
+        if (empty($username) || empty($email)) {
+            return $this->error("Username and email are required.");
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->error("Please enter a valid email address.");
         }
 
         try {
+            // Check if user exists
+            $check = $this->connection->prepare("SELECT id FROM users WHERE id = :id");
+            $check->execute(["id" => $id]);
+
+            if (!$check->fetch()) {
+                return $this->error("User not found.");
+            }
+
             // Check username
             $stmt = $this->connection->prepare(
                 "SELECT id FROM users WHERE username = :username AND id != :id"
@@ -255,10 +335,7 @@ class UserOps
             ]);
 
             if ($stmt->fetch()) {
-                return [
-                    "success" => false,
-                    "message" => "Username already taken"
-                ];
+                return $this->error("This username is already in use.");
             }
 
             // Check email
@@ -271,10 +348,7 @@ class UserOps
             ]);
 
             if ($stmt->fetch()) {
-                return [
-                    "success" => false,
-                    "message" => "Email already in use"
-                ];
+                return $this->error("This email is already registered.");
             }
 
             // Update
@@ -284,28 +358,25 @@ class UserOps
                               username   = :username,
                               email      = :email,
                               photo      = :photo
-                 WHERE id = :id"
+             WHERE id = :id"
             );
 
             $stmt->execute([
                 "id" => $id,
-                "first" => $first,
-                "last" => $last,
-                "username" => $username,
+                "first" => htmlspecialchars($first),
+                "last" => htmlspecialchars($last),
+                "username" => htmlspecialchars($username),
                 "email" => $email,
                 "photo" => $photo
             ]);
 
-            return [
-                "success" => true,
-                "message" => "Profile updated successfully"
-            ];
-        } catch (PDOException $e) {
+            if ($stmt->rowCount() === 0) {
+                return $this->error("No changes were made.");
+            }
 
-            return [
-                "success" => false,
-                "message" => "Unable to update profile. Please try again"
-            ];
+            return $this->success(null, "Profile updated successfully.");
+        } catch (PDOException $e) {
+            return $this->error("Unable to update profile. Please try again later.");
         }
     }
     //-----------------------------------------------------------------------------------------------
@@ -313,35 +384,83 @@ class UserOps
     public function getUserById($id)
     {
         $id = filter_var($id, FILTER_VALIDATE_INT);
-        if (!$id) return false;
 
-        $query = "SELECT * FROM users WHERE id = :id";
-        $stmt = $this->connection->prepare($query);
-        $stmt->execute(["id" => $id]);
+        if (!$id) {
+            return $this->error("Invalid user ID.");
+        }
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM users WHERE id = :id");
+            $stmt->execute(["id" => $id]);
+
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$user) {
+                return $this->error("User not found.");
+            }
+
+            // XSS protection
+            $user = array_map('htmlspecialchars', $user);
+
+            return $this->success($user, "User data retrieved successfully.");
+        } catch (PDOException $e) {
+            return $this->error("Unable to fetch user data. Please try again later.");
+        }
     }
 
     //-----------------------------------------------------------------------------------------------
-
     public function getUserByEmail($email)
     {
-        $query = "SELECT * FROM users WHERE email = :email";
-        $stmt = $this->connection->prepare($query);
-        $stmt->execute(["email" => $email]);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->error("Invalid email format.");
+        }
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->connection->prepare(
+                "SELECT * FROM users WHERE email = :email"
+            );
+            $stmt->execute(["email" => $email]);
+
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$user) {
+                return $this->error("No account found with this email.");
+            }
+
+            // XSS protection
+            $user = array_map('htmlspecialchars', $user);
+
+            return $this->success($user, "User data retrieved successfully.");
+        } catch (PDOException $e) {
+            return $this->error("Unable to fetch user data. Please try again later.");
+        }
     }
 
     //-----------------------------------------------------------------------------------------------
 
     public function getUserByUsername($username)
     {
-        $query = "SELECT * FROM users WHERE username = :username";
-        $stmt = $this->connection->prepare($query);
-        $stmt->execute(["username" => $username]);
+        if (empty($username)) {
+            return $this->error("Username is required.");
+        }
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM users WHERE username = :username");
+            $stmt->execute(["username" => $username]);
+
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$user) {
+                return $this->error("No account found with this username.");
+            }
+
+            // XSS protection
+            $user = array_map('htmlspecialchars', $user);
+
+            return $this->success($user, "User data retrieved successfully.");
+        } catch (PDOException $e) {
+            return $this->error("Unable to fetch user data. Please try again later.");
+        }
     }
 
     //-----------------------------------------------------------------------------------------------
@@ -349,68 +468,56 @@ class UserOps
     public function changePassword($id, $oldPassword, $newPassword)
     {
         $id = filter_var($id, FILTER_VALIDATE_INT);
-        if ($id === false) {
-            return [
-                "success" => false,
-                "message" => "Invalid user ID."
-            ];
+
+        if (!$id) {
+            return $this->error("Invalid user. Please try again.");
         }
 
         if (empty($oldPassword) || empty($newPassword)) {
-            return
-                [
-                    "success" => false,
-                    "message" => "Password fields cannot be empty."
-                ];
+            return $this->error("All password fields are required.");
         }
 
+        /* if (strlen($newPassword) < 6) {
+            return $this->error("New password must be at least 6 characters.");
+        }*/
 
-        // Get user from DB
-        $user = $this->getUserById($id);
-        if (!$user) {
-            return ["error" => "User not found."];
+        if ($oldPassword === $newPassword) {
+            return $this->error("New password must be different from the current password.");
         }
 
-        // Verify old password -
+        $userResponse = $this->getUserById($id);
+
+        if (!$userResponse['success']) {
+            return $this->error("User not found.");
+        }
+
+        $user = $userResponse['data'];
+
+        // verify old password
         if (!password_verify($oldPassword, $user['password_hash'])) {
-            return [
-                "success" => false,
-                "message" => "Current password is incorrect."
-            ];
+            return $this->error("Current password is incorrect.");
         }
 
         try {
-            //Update password in DB
-            $stmt = $this->connection->prepare(
-                "UPDATE users SET password_hash = :password WHERE id = :id"
-            );
+            $stmt = $this->connection->prepare("UPDATE users SET password_hash = :password WHERE id = :id");
 
             $stmt->execute([
                 "id" => $id,
                 "password" => password_hash($newPassword, PASSWORD_DEFAULT)
             ]);
 
-            // Check if update actually happened
             if ($stmt->rowCount() === 0) {
-
-                return [
-                    "success" => false,
-                    "message" => "Password was not updated."
-                ];
+                return $this->error("Password update failed. Please try again.");
             }
 
-            return [
-                "success" => true,
-                "message" => "Password updated successfully."
-            ];
+            return $this->success(null, "Password updated successfully.");
         } catch (PDOException $e) {
-            return [
-                "success" => false,
-                "message" => "Database error. Please try again."
-            ];
+            return $this->error("Unable to update password. Please try again later.");
         }
     }
 }
+
+//======================================================================
 
 
 class ReviewsOps
@@ -422,94 +529,124 @@ class ReviewsOps
         $database = new Database();
         $this->connection = $database->getConnection();
     }
+    private function success($data = null, $message = null)
+    {
+        return [
+            "success" => true,
+            "data" => $data,
+            "message" => $message
+        ];
+    }
 
+    private function error($message)
+    {
+        return [
+            "success" => false,
+            "message" => $message
+        ];
+    }
+
+    private function sanitizeArray($array)
+    {
+        return array_map(function ($item) {
+            return array_map('htmlspecialchars', $item);
+        }, $array);
+    }
     // -------------------------------------------------------------------------
     public function addOrUpdateReview($userId, $movieData, $rating, $comment)
     {
         $userId = filter_var($userId, FILTER_VALIDATE_INT);
         $rating = filter_var($rating, FILTER_VALIDATE_INT);
 
-        if (!$userId || !$rating || $rating < 1 || $rating > 10) {
-            return [
-                "success" => false,
-                "message" => "Invalid data"
-            ];
+        if (!$userId) {
+            return $this->error("Invalid user. Please log in again.");
+        }
+
+        if ($rating === false || $rating < 0 || $rating > 10) {
+            return $this->error("Rating must be between 0 and 10.");
+        }
+
+        if (empty($movieData['tmdb_id'])) {
+            return $this->error("Movie information is missing.");
         }
 
         try {
-            // 1. check movie
-            $stmt = $this->connection->prepare(
-                "SELECT id FROM movies WHERE tmdb_id = :tmdb_id"
-            );
+            // check movie
+            $stmt = $this->connection->prepare("SELECT id FROM movies WHERE tmdb_id = :tmdb_id");
             $stmt->execute(["tmdb_id" => $movieData['tmdb_id']]);
             $movie = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($movie) {
                 $movieId = $movie['id'];
             } else {
-                // insert movie
                 $stmt = $this->connection->prepare(
                     "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description)
-                     VALUES (:tmdb_id, :title, :poster, :date, :desc)"
+                 VALUES (:tmdb_id, :title, :poster, :date, :desc)"
                 );
 
                 $stmt->execute([
                     "tmdb_id" => $movieData['tmdb_id'],
-                    "title" => $movieData['title'],
-                    "poster" => $movieData['poster_path'],
-                    "date" => $movieData['release_date'],
-                    "desc" => $movieData['description']
+                    "title" => $movieData['title'] ?? '',
+                    "poster" => $movieData['poster_path'] ?? '',
+                    "date" => $movieData['release_date'] ?? null,
+                    "desc" => $movieData['description'] ?? ''
                 ]);
 
                 $movieId = $this->connection->lastInsertId();
             }
 
-            // 2. insert or update review
+            // insert or update review
             $stmt = $this->connection->prepare(
                 "INSERT INTO reviews (user_id, movie_id, rating, comment)
-                 VALUES (:user_id, :movie_id, :rating, :comment)
-                 ON DUPLICATE KEY UPDATE
-                 rating = :rating,
-                 comment = :comment"
+             VALUES (:user_id, :movie_id, :rating, :comment)
+             ON DUPLICATE KEY UPDATE
+             rating = :rating,
+             comment = :comment"
             );
 
             $stmt->execute([
                 "user_id" => $userId,
                 "movie_id" => $movieId,
                 "rating" => $rating,
-                "comment" => $comment
+                "comment" => $comment ?? ''
             ]);
 
-            return [
-                "success" => true,
-                "message" => "Review saved successfully"
-            ];
+            return $this->success(null, "Your review has been saved successfully.");
         } catch (PDOException $e) {
-            return [
-                "success" => false,
-                "message" => "Database error"
-            ];
+            return $this->error("Unable to save your review. Please try again later.");
         }
     }
-
     // -------------------------------------------------------------------------
     public function getUserReview($userId, $movieId)
     {
         $userId = filter_var($userId, FILTER_VALIDATE_INT);
         $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
 
-        if (!$userId || !$movieId) return false;
+        if (!$userId || !$movieId) {
+            return $this->error("Invalid request. Please try again.");
+        }
 
-        $stmt = $this->connection->prepare(
-            "SELECT * FROM reviews WHERE user_id = :user_id AND movie_id = :movie_id"
-        );
+        try {
+            $stmt = $this->connection->prepare("SELECT * FROM reviews WHERE user_id = :user_id AND movie_id = :movie_id");
 
-        $stmt->execute([
-            "user_id" => $userId,
-            "movie_id" => $movieId
-        ]);
+            $stmt->execute([
+                "user_id" => $userId,
+                "movie_id" => $movieId
+            ]);
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+            $review = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$review) {
+                return $this->success(null, "You haven't added a review for this movie yet.");
+            }
+
+            // XSS protection
+            $review = array_map('htmlspecialchars', $review);
+
+            return $this->success($review, "Your review has been retrieved successfully.");
+        } catch (PDOException $e) {
+            return $this->error("Unable to load your review. Please try again later.");
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -518,17 +655,12 @@ class ReviewsOps
         $userId = filter_var($userId, FILTER_VALIDATE_INT);
         $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
 
-        if (!$userId || !$movieId) {
-            return [
-                "success" => false,
-                "message" => "Invalid data"
-            ];
+        if ($userId === false || $movieId === false) {
+            return $this->error("Invalid request. Please try again.");
         }
 
         try {
-            $stmt = $this->connection->prepare(
-                "DELETE FROM reviews WHERE user_id = :user_id AND movie_id = :movie_id"
-            );
+            $stmt = $this->connection->prepare("DELETE FROM reviews  WHERE user_id = :user_id AND movie_id = :movie_id");
 
             $stmt->execute([
                 "user_id" => $userId,
@@ -536,56 +668,44 @@ class ReviewsOps
             ]);
 
             if ($stmt->rowCount() > 0) {
-                return [
-                    "success" => true,
-                    "message" => "Review deleted"
-                ];
+                return $this->success(null, "Your review has been deleted successfully.");
             }
 
-            return [
-                "success" => false,
-                "message" => "Review not found"
-            ];
+            return $this->success(null, "No review found to delete.");
         } catch (PDOException $e) {
-            return [
-                "success" => false,
-                "message" => "Database error"
-            ];
+            return $this->error("Unable to delete your review. Please try again later.");
         }
     }
-
     // -------------------------------------------------------------------------
     public function getMovieReviews($movieId)
     {
         $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
 
-        if (!$movieId) {
-            return [
-                "success" => false,
-                "message" => "Invalid movie id"
-            ];
+        if ($movieId === false) {
+            return $this->error("Invalid movie. Please try again.");
         }
 
         try {
             $stmt = $this->connection->prepare(
                 "SELECT reviews.*, users.username, users.photo
-                 FROM reviews
-                 JOIN users ON reviews.user_id = users.id
-                 WHERE reviews.movie_id = :movie_id
-                 ORDER BY reviews.created_at DESC"
+             FROM reviews JOIN users ON reviews.user_id = users.id
+             WHERE reviews.movie_id = :movie_id  ORDER BY reviews.created_at DESC"
             );
 
             $stmt->execute(["movie_id" => $movieId]);
 
-            return [
-                "success" => true,
-                "reviews" => $stmt->fetchAll(PDO::FETCH_ASSOC)
-            ];
+            $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // XSS protection
+            $reviews = $this->sanitizeArray($reviews);
+
+            if (empty($reviews)) {
+                return $this->success([], "No reviews available for this movie yet.");
+            }
+
+            return $this->success($reviews, "Reviews loaded successfully.");
         } catch (PDOException $e) {
-            return [
-                "success" => false,
-                "message" => "Database error"
-            ];
+            return $this->error("Unable to load reviews. Please try again later.");
         }
     }
 }
