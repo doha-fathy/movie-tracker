@@ -127,7 +127,7 @@ class UserOps
                 "success" => true,
                 "message" => "Account created successfully",
                 "data" => [
-                    "lastInsertId" => $userId
+                    "lastinsertid" => $userId
                 ]
             ];
         } catch (PDOException $e) {
