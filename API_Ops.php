@@ -128,7 +128,7 @@ function respond(bool $success, $data = null, $error = null) {
 // }
 
 
-function injectPathParam($endpoint, $params){
+function injectPathParam($endpoint, &$params){
     // Inject dynamic path params (like {id})
     if (strpos($endpoint, '{id}') !== false) {
 
@@ -175,7 +175,7 @@ function buildTmdbUrl($endpoint, $params = []) {
         . "?api_key=" . $apikey
         . "&" . http_build_query($params);
 
-    var_dump($url);
+    // var_dump($url);
     return $url;
 }
 
