@@ -9,70 +9,63 @@ function isValidEmail(email) {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return emailRegex.test(email) && !/<>'"/.test(email);
 }
-
 async function register(firstName, lastName, email, password) {
     try {
-        const sanitizedData = {
-            action: 'register',
-            first_name: sanitizeString(firstName),
-            last_name: sanitizeString(lastName),
-            email: sanitizeString(email).toLowerCase(),
-            password: password
-        };
-        
-        if (!isValidEmail(sanitizedData.email)) {
-            return { success: false, error: 'Invalid email format' };
-        }
-        
+        const params = new URLSearchParams();
+        params.append('action', 'register');
+        params.append('first_name', sanitizeString(firstName));
+        params.append('last_name', sanitizeString(lastName));
+        params.append('email', sanitizeString(email).toLowerCase());
+        params.append('password', password);
+
         const response = await fetch(AUTH_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(sanitizedData)
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params.toString()
         });
-        
+
         const data = await response.json();
-        
+
         if (data.error) {
             return { success: false, error: data.error };
         }
-        
+
         return { success: true, user: data.user };
-        
+
+    } catch (error) {
+        return { success: false, error: 'Network error occurred' };
+    }
+}
+async function login(email, password) {
+    try {
+        const params = new URLSearchParams();
+        params.append('action', 'login');
+        params.append('email', sanitizeString(email).toLowerCase());
+        params.append('password', password);
+
+        const response = await fetch(AUTH_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params.toString()
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            return { success: false, error: data.error };
+        }
+
+        return { success: true, user: data.user };
+
     } catch (error) {
         return { success: false, error: 'Network error occurred' };
     }
 }
 
-async function login(email, password) {
-    try {
-        const sanitizedData = {
-            action: 'login',
-            email: sanitizeString(email).toLowerCase(),
-            password: password
-        };
-        
-        if (!isValidEmail(sanitizedData.email)) {
-            return { success: false, error: 'Invalid email format' };
-        }
-        
-        const response = await fetch(AUTH_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(sanitizedData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            return { success: false, error: data.error };
-        }
-        
-        return { success: true, user: data.user };
-        
-    } catch (error) {
-        return { success: false, error: 'Network error occurred' };
-    }
-}
 
 async function checkAuthStatus() {
     try {
