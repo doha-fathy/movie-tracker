@@ -1,11 +1,11 @@
 
-const API_URL = 'watchlist_api.php';
+const API_URL_WatchingList = 'watchlist_api.php';
 
 
 async function loadWatchlist() {
     try {
         
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL_WatchingList);
 
         if (!response.ok) {
             throw new Error('There was a problem connecting to the server');
@@ -52,7 +52,7 @@ async function deleteFromWatchlist(movieId) {
     if (!confirmDelete) return;
 
     try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(API_URL_WatchingList, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

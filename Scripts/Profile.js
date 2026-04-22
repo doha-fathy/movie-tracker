@@ -271,21 +271,21 @@ async function loadProfileData() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user is authenticated
-    const authStatus = await Auth.checkAuthStatus();
+// document.addEventListener('DOMContentLoaded', async () => {
+//     // Check if user is authenticated
+//     const authStatus = await Auth.checkAuthStatus();
     
-    if (!authStatus.authenticated) {
-        // Redirect to login
-        window.location.href = 'index.php';
-        return;
-    }
+//     if (!authStatus.authenticated) {
+//         // Redirect to login
+//         window.location.href = 'index.php';
+//         return;
+//     }
     
-    // Load profile page if container exists
-    if (document.getElementById('profile-container')) {
-        renderProfilePage('profile-container');
-    }
-});
+//     // Load profile page if container exists
+//     if (document.getElementById('profile-container')) {
+//         renderProfilePage('profile-container');
+//     }
+// });
 
 window.Profile = {
     fetchUserProfile,

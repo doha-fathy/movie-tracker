@@ -100,45 +100,45 @@ async function checkAuthStatus() {
     }
 }
 
-async function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        await logout();
-        // Show login form directly without re-checking status
-        showLoginForm();
-    }
-}
+// async function handleLogout() {
+//     if (confirm('Are you sure you want to logout?')) {
+//         await logout();
+//         // Show login form directly without re-checking status
+//         showLoginForm();
+//     }
+// }
 
-async function updateUIForAuth() {
-    const authStatus = await checkAuthStatus();
-    const authContainer = document.getElementById('auth-container');
+// async function updateUIForAuth() {
+//     const authStatus = await checkAuthStatus();
+//     const authContainer = document.getElementById('auth-container');
     
-    if (!authContainer) return;
+//     if (!authContainer) return;
     
-    if (authStatus.authenticated) {
-        // Show logout button
-        authContainer.innerHTML = `
-            <div class="text-center">
-                <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</button>
-            </div>
-        `;
+//     if (authStatus.authenticated) {
+//         // Show logout button
+//         authContainer.innerHTML = `
+//             <div class="text-center">
+//                 <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</button>
+//             </div>
+//         `;
         
-        // Add logout event
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', handleLogout);
-        }
-    } else {
-        // Show login form
-        showLoginForm();
-    }
-}
+//         // Add logout event
+//         const logoutBtn = document.getElementById('logout-btn');
+//         if (logoutBtn) {
+//             logoutBtn.addEventListener('click', handleLogout);
+//         }
+//     } else {
+//         // Show login form
+//         showLoginForm();
+//     }
+// }
 
 function renderRegisterForm(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
     
     container.innerHTML = `
-        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12">
             <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
             <form id="register-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
@@ -166,7 +166,7 @@ function renderRegisterForm(containerId) {
                 <div id="register-error" class="text-red-500 text-sm hidden"></div>
                 <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Register</button>
             </form>
-            <p class="mt-4 text-center text-gray-600">Already have an account? <a href="#" onclick="showLoginForm()" class="text-green-500 hover:underline">Login</a></p>
+            <p class="mt-4 text-center text-gray-600">Already have an account? <a href="javascript:void(0)" onclick="showLoginForm()" class="text-green-500 hover:underline">Login</a></p>
         </div>
     `;
     
@@ -193,7 +193,7 @@ function renderRegisterForm(containerId) {
         const result = await register(firstName, lastName, email, password);
         
         if (result.success) {
-            await updateUIForAuth();
+            await window.updateUIForAuth();
         } else {
             errorDiv.textContent = result.error || 'Registration failed';
             errorDiv.classList.remove('hidden');
@@ -206,7 +206,7 @@ function renderLoginForm(containerId) {
     if (!container) return;
     
     container.innerHTML = `
-        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12">
             <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
             <form id="login-form" class="space-y-4">
                 <div>
@@ -220,7 +220,7 @@ function renderLoginForm(containerId) {
                 <div id="login-error" class="text-red-500 text-sm hidden"></div>
                 <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Login</button>
             </form>
-            <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="#" onclick="showRegisterForm()" class="text-blue-500 hover:underline">Register</a></p>
+            <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="javascript:void(0)" onclick="showRegisterForm()" class="text-blue-500 hover:underline">Register</a></p>
         </div>
     `;
     
@@ -237,7 +237,7 @@ function renderLoginForm(containerId) {
         const result = await login(email, password);
         
         if (result.success) {
-            await updateUIForAuth();
+            await window.updateUIForAuth();
         } else {
             errorDiv.textContent = result.error || 'Login failed';
             errorDiv.classList.remove('hidden');
@@ -253,18 +253,18 @@ function showRegisterForm() {
     renderRegisterForm('auth-container');
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    if (document.getElementById('auth-container')) {
-        await updateUIForAuth();
-    }
-});
+// document.addEventListener('DOMContentLoaded', async () => {
+//     if (document.getElementById('auth-container')) {
+//         await updateUIForAuth();
+//     }
+// });
 
 window.Auth = {
     register,
     login,
     checkAuthStatus,
-    updateUIForAuth,
-    handleLogout,
+    // updateUIForAuth,
+    // handleLogout,
     renderLoginForm,
     renderRegisterForm,
     showLoginForm,

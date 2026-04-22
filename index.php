@@ -8,21 +8,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="Styles/Style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="Styles/Movies.css">
+    <link rel="stylesheet" href="Styles/Style.css">
 </head>
 
 <body>
+    <div id="navbar"></div>
 
-    <section id="movieDetails">
-    </section>
-    <section id="movies-page"></section>
-<section id="upcoming-page"></section>
+    <main id="app"></main>
+
+    <footer></footer>
 
     <script src="Scripts/API_Ops.js"></script>
-    <script src="Scripts/Details.js"></script>
+    <script src="Scripts/Auth.js"></script>
     <script src="Scripts/Movies.js"></script>
+    <script src="Scripts/Details.js"></script>
     <script src="Scripts/Upcoming.js"></script>
+    <script src="Scripts/WatchingList.js"></script>
+    <script src="Scripts/Profile.js"></script>
+    <script src="Scripts/App.js"></script>
 </body>
 
 </html>

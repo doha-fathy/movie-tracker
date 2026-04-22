@@ -1,6 +1,5 @@
-
 // const movieId = 550;
-async function loadMovie(movieId) {
+async function loadMovieDetails(movieId) {
   const movieDetails = await ApiOps.getMovieDetails(movieId);
   const movie = movieDetails.movie;
   const cast = movieDetails.cast;
@@ -9,7 +8,7 @@ async function loadMovie(movieId) {
   const recommendations = await ApiOps.getRecommendations(movieId);
   const similarMovies = await ApiOps.getSimilarMovies(movieId);
 
-  const detailsContent = document.getElementById("movieDetails");
+  const detailsContent = document.getElementById("movie-details");
 
   if (!movie) return;
 
@@ -253,7 +252,7 @@ async function loadMovie(movieId) {
     similarDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
             <div class="flex flex-col relative rounded-2xl">
               <div
-                class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden"
+                class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden relative"
               >
                 <img
                    src="${movie.poster || "Images/posterPlaceholder.jpg"}"
@@ -275,6 +274,7 @@ async function loadMovie(movieId) {
                     class="fa-solid fa-arrow-right-long transition-all duration-300 group-hover:translate-x-3"
                   ></i>
                 </button>
+              </div>
               </div>`;
   });
 
@@ -305,13 +305,14 @@ async function loadMovie(movieId) {
                     class="fa-solid fa-arrow-right-long transition-all duration-300 group-hover:translate-x-3"
                   ></i>
                 </button>
+              </div>
               </div>`;
   });
 
   document.querySelectorAll(".showDetailsBtn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       const movieId = e.currentTarget.dataset.movieId;
-      window.location.href = `Details.html?id=${movieId}`;
+      navigateTo("details", movieId);
     });
   });
 
@@ -386,12 +387,12 @@ async function loadMovie(movieId) {
       document.getElementById(target).classList.remove("hidden");
 
       tabs.forEach((tab) => {
-        tab.classList.remove("bg-[#C1246B]","text-white");
-        tab.classList.add("bg-red-200/50","text-bleck");
+        tab.classList.remove("bg-[#C1246B]", "text-white");
+        tab.classList.add("bg-red-200/50", "text-bleck");
       });
 
-      tab.classList.add("bg-[#C1246B]" , "text-white");
-      tab.classList.remove("bg-red-200/50" , "text-black");
+      tab.classList.add("bg-[#C1246B]", "text-white");
+      tab.classList.remove("bg-red-200/50", "text-black");
     });
   });
 }
