@@ -1,5 +1,5 @@
 
-const movieId = 550;
+// const movieId = 550;
 async function loadMovie(movieId) {
   const movieDetails = await ApiOps.getMovieDetails(movieId);
   const movie = movieDetails.movie;
@@ -116,7 +116,7 @@ async function loadMovie(movieId) {
 
                   
                 <div class="mt-8 p-6 w-full lg:w-[95%] mx-auto">
-                  <h2 class="text-3xl font-bold mb-4 pb-2">Main Actors</h2>
+                  <h2 class="text-3xl font-bold mb-4 pb-2 text-white">Main Actors</h2>
 
                   <div
                     class="relative flex gap-10 overflow-x-auto pb-4 scroll-smooth custom-scroll-actors"
@@ -126,7 +126,7 @@ async function loadMovie(movieId) {
                 </div>
 
         <div class="mt-12 mb-6 w-full lg:w-[95%] mx-auto">
-        <h2 class="text-3xl font-bold mb-4 pb-2">Reviews</h2>
+        <h2 class="text-3xl font-bold mb-4 pb-2 text-white">Reviews</h2>
 
         <div class="flex flex-col lg:flex-row lg:flex-wrap">
           <div class="pe-4 w-full lg:w-2/3">
@@ -187,7 +187,7 @@ async function loadMovie(movieId) {
 
       
       <div id="similar" class="tab-content mb-6 w-full lg:w-[95%] mx-auto">
-        <h2 class="text-xl font-bold">Similar Movies</h2>
+        <h2 class="text-xl font-bold text-white">Similar Movies</h2>
 
         <div
           class="flex flex-col gap-3 lg:flex-wrap lg:flex-row lg:gap-0"
@@ -203,7 +203,7 @@ async function loadMovie(movieId) {
         id="recommendations"
         class="tab-content mb-6 w-full lg:w-[95%] mx-auto hidden"
       >
-        <h2 class="text-xl font-bold">Recommended Movies</h2>
+        <h2 class="text-xl font-bold text-white">Recommended Movies</h2>
 
         <div
           class="flex flex-col gap-3 lg:flex-wrap lg:flex-row lg:gap-0"
@@ -396,4 +396,4 @@ async function loadMovie(movieId) {
   });
 }
 
-loadMovie(movieId);
+// loadMovie(movieId);
