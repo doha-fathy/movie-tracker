@@ -16,9 +16,13 @@
 
     <section id="movieDetails">
     </section>
+    <section id="movies-page"></section>
+<section id="upcoming-page"></section>
 
     <script src="Scripts/API_Ops.js"></script>
     <script src="Scripts/Details.js"></script>
+    <script src="Scripts/Movies.js"></script>
+    <script src="Scripts/Upcoming.js"></script>
 </body>
 
 </html>
