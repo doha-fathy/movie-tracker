@@ -1,7 +1,15 @@
 <?php
 
+require_once "DB_Ops.php";
+
 $env = parse_ini_file(__DIR__ . '/.env');
+
+ini_set('session.use_strict_mode', 1);
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_samesite', 'Strict');
+
 session_start();
+
 header("Content-Type: application/json");
 
 
@@ -28,15 +36,7 @@ $db   = $env['DB_NAME'];
 $user = $env['DB_USER'];
 $pass = $env['DB_PASS'];
 
-$pdo = new PDO(
-    "mysql:host=$host;dbname=$db;charset=utf8",
-    $user,
-    $pass,
-    [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]
-);
+$userOps = new UserOps();
 
 
 
@@ -44,7 +44,7 @@ $routes = [
     'register' => 'register',
     'login' => 'login',
     'logout' => 'logout',
-    'me' => 'getMe',
+    'check' => 'check',
     'change_password' => 'changePass'
 ];
 
@@ -86,7 +86,7 @@ function isValidUsername($username) {
 
 function register(){
 
-    global $pdo;
+    global $userOps;
 
     $first_name = trim($_POST['first_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
@@ -102,35 +102,27 @@ function register(){
     if (!isValidEmail($email)) respond(false, null, "Invalid email");
     if (!isValidPassword($password)) respond(false, null, "Password length must be between 8 and 30");
 
-    $hash = password_hash($password, PASSWORD_BCRYPT);
 
-    try {
-        $stmt = $pdo->prepare("
-            INSERT INTO users (first_name, last_name, username, email, password_hash)
-            VALUES (?, ?, ?, ?, ?)
-        ");
-
-        $stmt->execute([$first_name, $last_name, $username, $email, $hash]);
-
-        $id = $pdo->lastInsertId();
-
-        session_regenerate_id(true);
-        $_SESSION['user_id'] = $id;
-
-        respond(true, [
-            "user_id" => $id,
-            "username" => $username
-        ], "Registered");
-
-    } catch (PDOException $e) {
-        respond(false, null, "Email or username already exists");
+    $response = $userOps->createUser($first_name, $last_name, $username, $email, $password);
+    if (!$response['success']) {
+        respond(false, null, $response['message'] ?? "Registration failed");
     }
+
+    $id = $response['data']['lastinsertid'] ?? null;
+
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = $id;
+
+    respond(true, [
+        "user_id" => $id,
+        "username" => $username
+    ], "Registered");
 }
 
 
 function login(){
 
-    global $pdo;
+    global $userOps;
 
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
@@ -140,14 +132,8 @@ function login(){
     if (!$password) respond(false, null, "Password required");
     if (!isValidEmail($email)) respond(false, null, "Invalid email");
 
-    $stmt = $pdo->prepare("
-        SELECT id, username, password_hash, photo
-        FROM users
-        WHERE email = ?
-    ");
 
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
+    $user = $userOps->getUserByEmail($email);
 
     if (!$user || !password_verify($password, $user['password_hash'])) {
         respond(false, null, "Invalid credentials");
@@ -173,22 +159,15 @@ function logout(){
 }
 
 
-function getMe(){
+function check(){
 
-    global $pdo;
+    global $userOps;
 
     if (!isset($_SESSION['user_id'])) {
         respond(true, ["authenticated" => false]);
     }
 
-    $stmt = $pdo->prepare("
-        SELECT id, first_name, last_name, username, email, photo
-        FROM users
-        WHERE id = ?
-    ");
-
-    $stmt->execute([$_SESSION['user_id']]);
-    $user = $stmt->fetch();
+    $user = $userOps->getUserById($_SESSION['user_id']);
 
     respond(true, [
         "authenticated" => true,
@@ -199,7 +178,7 @@ function getMe(){
 
 function changePass(){
 
-    global $pdo;
+    global $userOps;
 
     $id = requireAuth();
 
@@ -210,14 +189,7 @@ function changePass(){
     if (!$newPassword) respond(false, null, "New password required");
     if (!isValidPassword($newPassword)) respond(false, null, "Password length must be between 8 and 30");
 
-    $stmt = $pdo->prepare("
-        SELECT password_hash
-        FROM users
-        WHERE id = ?
-    ");
-
-    $stmt->execute([$id]);
-    $user = $stmt->fetch();
+    $user = $userOps->getUserById($id);
 
     if (!password_verify($oldPassword, $user['password_hash'])) {
         respond(false, null, "Old password incorrect");
@@ -227,15 +199,11 @@ function changePass(){
         respond(false, null, "New password must be different");
     }
 
-    $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
+    $result = $userOps->changePassword($id, $oldPassword, $newPassword);
 
-    $stmt = $pdo->prepare("
-        UPDATE users
-        SET password_hash = ?
-        WHERE id = ?
-    ");
+    if (isset($result["error"])) {
+        respond(false, null, $result["error"]);
+    }
 
-    $stmt->execute([$newHash, $id]);
-
-    respond(true, null, "Password updated");
+    respond(true, null, $result["message"]);
 }
