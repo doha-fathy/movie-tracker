@@ -9,16 +9,16 @@ function isValidEmail(email) {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return emailRegex.test(email) && !/<>'"/.test(email);
 }
-async function register(firstName, lastName, email, password) {
+async function register(firstName, lastName, username, email, password) {
     try {
         const params = new URLSearchParams();
-        params.append('action', 'register');
         params.append('first_name', sanitizeString(firstName));
         params.append('last_name', sanitizeString(lastName));
+        params.append('username', sanitizeString(username));
         params.append('email', sanitizeString(email).toLowerCase());
         params.append('password', password);
 
-        const response = await fetch(AUTH_URL, {
+        const response = await fetch(AUTH_URL + '?action=register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -28,24 +28,30 @@ async function register(firstName, lastName, email, password) {
 
         const data = await response.json();
 
-        if (data.error) {
-            return { success: false, error: data.error };
+        if (!data.success) {
+            return { success: false, error: data.message };
         }
 
-        return { success: true, user: data.user };
+        return {
+            success: true,
+            user: {
+                id: data.data.user_id,
+                username: data.data.username
+            }
+        };
 
     } catch (error) {
-        return { success: false, error: 'Network error occurred' };
+        return { success: false, error: 'Network error' };
     }
 }
+
 async function login(email, password) {
     try {
         const params = new URLSearchParams();
-        params.append('action', 'login');
         params.append('email', sanitizeString(email).toLowerCase());
         params.append('password', password);
 
-        const response = await fetch(AUTH_URL, {
+        const response = await fetch(AUTH_URL + '?action=login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -55,29 +61,40 @@ async function login(email, password) {
 
         const data = await response.json();
 
-        if (data.error) {
-            return { success: false, error: data.error };
+        if (!data.success) {
+            return { success: false, error: data.message };
         }
 
-        return { success: true, user: data.user };
+        return {
+            success: true,
+            user: data.data
+        };
 
     } catch (error) {
         return { success: false, error: 'Network error occurred' };
     }
 }
-
 
 async function checkAuthStatus() {
     try {
         const response = await fetch(AUTH_URL + '?action=check');
         const data = await response.json();
-        
-        if (data.authenticated && data.user) {
-            return { authenticated: true, user: data.user };
+
+        if (!data.success) {
+            return { authenticated: false };
         }
-        
-        return { authenticated: false };
-        
+
+        const result = data.data;
+
+        if (!result.authenticated) {
+            return { authenticated: false };
+        }
+
+        return {
+            authenticated: true,
+            user: result.user
+        };
+
     } catch (error) {
         return { authenticated: false };
     }

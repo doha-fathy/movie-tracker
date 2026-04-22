@@ -1,4 +1,4 @@
-const PROFILE_URL = 'profile_api.php';
+const PROFILE_URL = 'profile.php';
 
 function sanitizeString(input) {
     if (typeof input !== 'string') return '';
@@ -10,114 +10,104 @@ async function fetchUserProfile() {
         const response = await fetch(PROFILE_URL + '?action=get_profile', {
             credentials: 'include'
         });
+
         const data = await response.json();
-        
-        if (data.error) {
-            return { success: false, error: data.error };
+
+        if (!data.success) {
+            return { success: false, error: data.message };
         }
-        
-        return { success: true, user: data.user };
+
+        return { success: true, user: data.data };
+
     } catch (error) {
         return { success: false, error: 'Network error occurred' };
     }
 }
-
 async function updateProfile(firstName, lastName) {
     try {
-        const sanitizedData = {
-            action: 'update_profile',
-            first_name: sanitizeString(firstName),
-            last_name: sanitizeString(lastName)
-        };
-        
-        const response = await fetch(PROFILE_URL, {
+        const response = await fetch(PROFILE_URL + '?action=update_profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify(sanitizedData)
+            body: JSON.stringify({
+                first_name: sanitizeString(firstName),
+                last_name: sanitizeString(lastName)
+            })
         });
-        
+
         const data = await response.json();
-        
-        if (data.error) {
-            return { success: false, error: data.error };
+
+        if (!data.success) {
+            return { success: false, error: data.message };
         }
-        
-        return { success: true, user: data.user };
+
+        return { success: true, user: data.data };
+
     } catch (error) {
         return { success: false, error: 'Failed to update profile' };
     }
 }
-
 async function changePassword(currentPassword, newPassword, confirmPassword) {
     try {
         if (newPassword !== confirmPassword) {
             return { success: false, error: 'Passwords do not match' };
         }
-        
-        if (newPassword.length < 6) {
-            return { success: false, error: 'Password must be at least 6 characters' };
-        }
-        
-        const sanitizedData = {
-            action: 'change_password',
-            current_password: currentPassword,
-            new_password: newPassword
-        };
-        
-        const response = await fetch(PROFILE_URL, {
+
+        const response = await fetch(PROFILE_URL + '?action=change_password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify(sanitizedData)
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
         });
-        
+
         const data = await response.json();
-        
-        if (data.error) {
-            return { success: false, error: data.error };
+
+        if (!data.success) {
+            return { success: false, error: data.message };
         }
-        
-        return { success: true, message: 'Password changed successfully' };
+
+        return { success: true, message: data.message };
+
     } catch (error) {
         return { success: false, error: 'Failed to change password' };
     }
 }
-
 async function uploadPhoto(file) {
     try {
         if (!file) {
             return { success: false, error: 'No file selected' };
         }
-        
-        // Check file type
+
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
         if (!allowedTypes.includes(file.type)) {
             return { success: false, error: 'Only JPEG, PNG, and GIF are allowed' };
         }
-        
-        // Check file size (max 5MB)
+
         if (file.size > 5 * 1024 * 1024) {
             return { success: false, error: 'File size must be less than 5MB' };
         }
-        
+
         const formData = new FormData();
         formData.append('action', 'upload_photo');
         formData.append('photo', file);
-        
+
         const response = await fetch(PROFILE_URL, {
             method: 'POST',
             credentials: 'include',
             body: formData
         });
-        
+
         const data = await response.json();
-        
-        if (data.error) {
-            return { success: false, error: data.error };
+
+        if (!data.success) {
+            return { success: false, error: data.message };
         }
-        
-        return { success: true, photo: data.photo };
+
+        return { success: true, photo: data.data.photo };
+
     } catch (error) {
         return { success: false, error: 'Failed to upload photo' };
     }
