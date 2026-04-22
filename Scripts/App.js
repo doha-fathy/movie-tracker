@@ -8,28 +8,28 @@ async function router() {
     const page   = params.get("page") || "login";
     const id     = params.get("id");
 
-    const authStatus  = await checkAuthStatus();
-    const publicPages = ["signup", "login"];
+    // const authStatus  = await checkAuthStatus();
+    // const publicPages = ["signup", "login"];
 
-    if (!authStatus.authenticated && !publicPages.includes(page)) {
-        window.history.replaceState({}, "", "?page=login");
-        renderNavbar(false);
-        loadLoginPage();
-        isRouting = false;
-        return;
-    }
+    // if (!authStatus.authenticated && !publicPages.includes(page)) {
+    //     window.history.replaceState({}, "", "?page=login");
+    //     renderNavbar(false);
+    //     loadLoginPage();
+    //     isRouting = false;
+    //     return;
+    // }
 
-    if (authStatus.authenticated && publicPages.includes(page)) {
-        window.history.replaceState({}, "", "?page=movies");
-        renderNavbar(true);
-        loadMoviesPage();
-        isRouting = false;
-        return;
-    }
+    // if (authStatus.authenticated && publicPages.includes(page)) {
+    //     window.history.replaceState({}, "", "?page=movies");
+    //     renderNavbar(true);
+    //     loadMoviesPage();
+    //     isRouting = false;
+    //     return;
+    // }
 
-    renderNavbar(authStatus.authenticated);
+    // renderNavbar(authStatus.authenticated);
 
-    // renderNavbar(true)
+    renderNavbar(true)
 
     switch (page) {
         case "signup":    loadSignupPage();    break;
@@ -136,7 +136,7 @@ window.handleLogout = async function () {
     }
 };
 
-router();
+// router();
 
-// renderNavbar(true);
-// loadMoviesPage();
+renderNavbar(true);
+loadMoviesPage();

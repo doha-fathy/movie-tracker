@@ -127,11 +127,10 @@ async function loadMovieDetails(movieId) {
         <div class="mt-12 mb-6 w-full lg:w-[95%] mx-auto">
         <h2 class="text-3xl font-bold mb-4 pb-2 text-white">Reviews</h2>
 
-        <div class="flex flex-col lg:flex-row lg:flex-wrap">
-          <div class="pe-4 w-full lg:w-2/3">
+        <div class="flex flex-col gap-4">
+          <div class="pe-4 w-full">
             <div class="mt-4 flex flex-col gap-6">
-              <div id="reviewsContainer" class="flex flex-col gap-6">
-              
+              <div id="reviewsContainer" class="flex flex-col gap-6">              
               </div>
 
               <button
@@ -146,7 +145,7 @@ async function loadMovieDetails(movieId) {
             </div>
           </div>
 
-          <div class="w-full lg:w-1/3 mt-4">
+           <div class="w-full">
             <form id="reviewForm" class="flex flex-col gap-4">
               <textarea
                 id="reviewInput"
@@ -163,6 +162,8 @@ async function loadMovieDetails(movieId) {
               </button>
             </form>
           </div>
+
+         
         </div>
       </div>
 
@@ -186,7 +187,7 @@ async function loadMovieDetails(movieId) {
 
       
       <div id="similar" class="tab-content mb-6 w-full lg:w-[95%] mx-auto">
-        <h2 class="text-xl font-bold text-white">Similar Movies</h2>
+        <h2 class="text-xl font-bold text-white my-4">Similar Movies</h2>
 
         <div
           class="flex flex-col gap-3 lg:flex-wrap lg:flex-row lg:gap-0"
@@ -202,7 +203,7 @@ async function loadMovieDetails(movieId) {
         id="recommendations"
         class="tab-content mb-6 w-full lg:w-[95%] mx-auto hidden"
       >
-        <h2 class="text-xl font-bold text-white">Recommended Movies</h2>
+        <h2 class="text-xl font-bold text-white my-4">Recommended Movies</h2>
 
         <div
           class="flex flex-col gap-3 lg:flex-wrap lg:flex-row lg:gap-0"
@@ -250,7 +251,7 @@ async function loadMovieDetails(movieId) {
   similarMovies.map((movie) => {
     const similarRating = formatRating(movie.rating);
     similarDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
-            <div class="flex flex-col relative rounded-2xl">
+            <div class="flex flex-col items-center justify-center relative rounded-2xl">
               <div
                 class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden relative"
               >
@@ -263,7 +264,7 @@ async function loadMovieDetails(movieId) {
               <div
                 class="flex flex-col gap-2 justify-center items-center bg-black/70 inset-0 absolute rounded-2xl text-white group-hover:opacity-100 opacity-0 transition-all duration-300"
               >
-                <p class="font-bold text-xl">${movie.title}</p>
+                <p class="font-bold text-xl text-center">${movie.title}</p>
                 <p class="font-bold text-xl">
                   <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
                   <span class="text-[#E13661] font-bold text-xl">${similarRating}</span>
@@ -281,7 +282,7 @@ async function loadMovieDetails(movieId) {
   recommendations.map((movie) => {
     const recommendationRating = formatRating(movie.rating);
     recommendationsDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
-            <div class="flex flex-col relative rounded-2xl">
+            <div class="flex flex-col items-center justify-center relative rounded-2xl">
               <div
                 class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden"
               >
@@ -294,7 +295,7 @@ async function loadMovieDetails(movieId) {
               <div
                 class="flex flex-col gap-2 justify-center items-center bg-black/70 inset-0 absolute rounded-2xl text-white group-hover:opacity-100 opacity-0 transition-all duration-300"
               >
-                <p class="font-bold text-xl">${movie.title}</p>
+                <p class="font-bold text-xl text-center">${movie.title}</p>
                 <p class="font-bold text-xl">
                   <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
                   <span class="text-[#E13661] font-bold text-xl">${recommendationRating}</span>
