@@ -17,7 +17,10 @@ class WatchlistOps
         $userId = filter_var($userId, FILTER_VALIDATE_INT);
 
         if (!$userId) {
-            return ["error" => "Invalid user"];
+            return [
+                "success" => false,
+                "message" => "Invalid user id "
+            ];
         }
 
         try {
@@ -30,9 +33,15 @@ class WatchlistOps
             $statement->execute(["user_id" => $userId]);
 
             $movies = $statement->fetchAll(PDO::FETCH_ASSOC);
-            return ["success" => true,  "movies" => $movies];
+            return [
+                "success" => true,
+                "movies" => $movies
+            ];
         } catch (PDOException $e) {
-            return ["error" => "Database error"];
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
         }
     }
 
@@ -44,8 +53,10 @@ class WatchlistOps
         $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
 
         if (!$userId || !$movieId) {
-            return ["error" => "Invalid data"];
-            return ["error" => "Invalid data"];
+            return [
+                "success" => false,
+                "message" => "Invalid data"
+            ];
         }
 
         try {
@@ -61,10 +72,91 @@ class WatchlistOps
                     "message" => "Movie removed successfully"
                 ];
             } else {
-                return ["error" => "Movie not found in watchlist"];
+                return [
+                    "success" => false,
+                    "message" => "Movie not found in watchlist"
+                ];
             }
         } catch (PDOException $e) {
-            return ["error" => "Database error"];
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------------
+    public function addToWatchlist($userId, $movieData)
+    {
+        $userId = filter_var($userId, FILTER_VALIDATE_INT);
+
+        // data-id → tmdb_id
+        $tmdb_id = $movieData['data-id'] ?? null;
+
+        if (!$userId || !$tmdb_id) {
+            return [
+                "success" => false,
+                "message" => "Invalid data"
+            ];
+        }
+
+        try {
+            // 1. check if movie exists
+            $stmt = $this->connection->prepare(
+                "SELECT id FROM movies WHERE tmdb_id = :tmdb_id"
+            );
+
+            $stmt->execute(["tmdb_id" => $tmdb_id]);
+
+            $movie = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($movie) {
+                $movieId = $movie['id'];
+            } else {
+                // 2. insert movie
+                $stmt = $this->connection->prepare(
+                    "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description)
+                 VALUES (:tmdb_id, :title, :poster, :date, :desc)"
+                );
+
+                $stmt->execute([
+                    "tmdb_id" => $tmdb_id,
+                    "title" => $movieData['title'],
+                    "poster" => $movieData['poster_path'],
+                    "date" => $movieData['release_date'],
+                    "desc" => $movieData['description']
+                ]);
+
+                $movieId = $this->connection->lastInsertId();
+            }
+
+            // 3. insert into watchlist
+            $stmt = $this->connection->prepare(
+                "INSERT INTO watchlist (user_id, movie_id) VALUES (:user_id, :movie_id)"
+            );
+
+            $stmt->execute([
+                "user_id" => $userId,
+                "movie_id" => $movieId
+            ]);
+
+            return [
+                "success" => true,
+                "message" => "Movie added to watchlist"
+            ];
+        } catch (PDOException $e) {
+
+            if ($e->getCode() == 23000) {
+                return [
+                    "success" => false,
+                    "message" => "Movie already in watchlist"
+                ];
+            }
+
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
         }
     }
 }
@@ -192,7 +284,7 @@ class UserOps
                               username   = :username,
                               email      = :email,
                               photo      = :photo
-               WHERE id = :id"
+                 WHERE id = :id"
             );
 
             $stmt->execute([
@@ -279,7 +371,7 @@ class UserOps
             return ["error" => "User not found."];
         }
 
-        // Verify old password (CRITICAL for security)
+        // Verify old password -
         if (!password_verify($oldPassword, $user['password_hash'])) {
             return [
                 "success" => false,
@@ -315,6 +407,184 @@ class UserOps
             return [
                 "success" => false,
                 "message" => "Database error. Please try again."
+            ];
+        }
+    }
+}
+
+
+class ReviewsOps
+{
+    private $connection;
+
+    public function __construct()
+    {
+        $database = new Database();
+        $this->connection = $database->getConnection();
+    }
+
+    // -------------------------------------------------------------------------
+    public function addOrUpdateReview($userId, $movieData, $rating, $comment)
+    {
+        $userId = filter_var($userId, FILTER_VALIDATE_INT);
+        $rating = filter_var($rating, FILTER_VALIDATE_INT);
+
+        if (!$userId || !$rating || $rating < 1 || $rating > 10) {
+            return [
+                "success" => false,
+                "message" => "Invalid data"
+            ];
+        }
+
+        try {
+            // 1. check movie
+            $stmt = $this->connection->prepare(
+                "SELECT id FROM movies WHERE tmdb_id = :tmdb_id"
+            );
+            $stmt->execute(["tmdb_id" => $movieData['tmdb_id']]);
+            $movie = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($movie) {
+                $movieId = $movie['id'];
+            } else {
+                // insert movie
+                $stmt = $this->connection->prepare(
+                    "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description)
+                     VALUES (:tmdb_id, :title, :poster, :date, :desc)"
+                );
+
+                $stmt->execute([
+                    "tmdb_id" => $movieData['tmdb_id'],
+                    "title" => $movieData['title'],
+                    "poster" => $movieData['poster_path'],
+                    "date" => $movieData['release_date'],
+                    "desc" => $movieData['description']
+                ]);
+
+                $movieId = $this->connection->lastInsertId();
+            }
+
+            // 2. insert or update review
+            $stmt = $this->connection->prepare(
+                "INSERT INTO reviews (user_id, movie_id, rating, comment)
+                 VALUES (:user_id, :movie_id, :rating, :comment)
+                 ON DUPLICATE KEY UPDATE
+                 rating = :rating,
+                 comment = :comment"
+            );
+
+            $stmt->execute([
+                "user_id" => $userId,
+                "movie_id" => $movieId,
+                "rating" => $rating,
+                "comment" => $comment
+            ]);
+
+            return [
+                "success" => true,
+                "message" => "Review saved successfully"
+            ];
+        } catch (PDOException $e) {
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    public function getUserReview($userId, $movieId)
+    {
+        $userId = filter_var($userId, FILTER_VALIDATE_INT);
+        $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
+
+        if (!$userId || !$movieId) return false;
+
+        $stmt = $this->connection->prepare(
+            "SELECT * FROM reviews WHERE user_id = :user_id AND movie_id = :movie_id"
+        );
+
+        $stmt->execute([
+            "user_id" => $userId,
+            "movie_id" => $movieId
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // -------------------------------------------------------------------------
+    public function deleteReview($userId, $movieId)
+    {
+        $userId = filter_var($userId, FILTER_VALIDATE_INT);
+        $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
+
+        if (!$userId || !$movieId) {
+            return [
+                "success" => false,
+                "message" => "Invalid data"
+            ];
+        }
+
+        try {
+            $stmt = $this->connection->prepare(
+                "DELETE FROM reviews WHERE user_id = :user_id AND movie_id = :movie_id"
+            );
+
+            $stmt->execute([
+                "user_id" => $userId,
+                "movie_id" => $movieId
+            ]);
+
+            if ($stmt->rowCount() > 0) {
+                return [
+                    "success" => true,
+                    "message" => "Review deleted"
+                ];
+            }
+
+            return [
+                "success" => false,
+                "message" => "Review not found"
+            ];
+        } catch (PDOException $e) {
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    public function getMovieReviews($movieId)
+    {
+        $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
+
+        if (!$movieId) {
+            return [
+                "success" => false,
+                "message" => "Invalid movie id"
+            ];
+        }
+
+        try {
+            $stmt = $this->connection->prepare(
+                "SELECT reviews.*, users.username, users.photo
+                 FROM reviews
+                 JOIN users ON reviews.user_id = users.id
+                 WHERE reviews.movie_id = :movie_id
+                 ORDER BY reviews.created_at DESC"
+            );
+
+            $stmt->execute(["movie_id" => $movieId]);
+
+            return [
+                "success" => true,
+                "reviews" => $stmt->fetchAll(PDO::FETCH_ASSOC)
+            ];
+        } catch (PDOException $e) {
+            return [
+                "success" => false,
+                "message" => "Database error"
             ];
         }
     }

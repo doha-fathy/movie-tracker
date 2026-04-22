@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    /*if ($action === 'add') {
+    if ($action === 'add') {
 
         if (!$movieId) {
             echo json_encode(["error" => "No movie_id"]);
@@ -39,8 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response = $watchlist->addToWatchlist($_SESSION['user_id'], $movieId);
         echo json_encode($response);
         exit;
-    }*/
-
+    }
+    
     if ($action === 'delete') {
 
         if (!$movieId) {
