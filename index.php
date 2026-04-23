@@ -1,3 +1,6 @@
+<?php
+require_once 'header.php';  
+?>
 <!DOCTYPE html>
 <html lang="en" class="bg-[linear-gradient(to_right,#0f050b,#1a0813,#2a0d1f,#3a1028)]">
 
