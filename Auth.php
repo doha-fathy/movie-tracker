@@ -1,6 +1,7 @@
 <?php
 
 require_once "DB_Ops.php";
+require_once 'vendor/autoload.php';
 
 $env = parse_ini_file(__DIR__ . '/.env');
 
@@ -221,6 +222,8 @@ function getProfile(){
     $user = $response['data'];
 
     unset($user['password_hash']);
+    unset($user['updated_at']);
+    unset($user['created_at']);
 
     respond(true, [
         "authenticated" => true,
@@ -430,7 +433,7 @@ function verifyEmail() {
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php';
+
 
 function sendEmail($to, $subject, $body)
 {
