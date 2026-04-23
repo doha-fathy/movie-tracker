@@ -1,3 +1,65 @@
+function createMovieCard(movie, index = 0) {
+  const posterSrc =
+    movie.poster && movie.poster.trim() !== ""
+      ? movie.poster
+      : "Images/posterPlaceholder.jpg";
+
+  const rating = movie.rating ? parseFloat(movie.rating).toFixed(1) : "N/A";
+  const ratingClass =
+    movie.rating >= 7 ? "high" : movie.rating >= 5 ? "mid" : "low";
+
+  const card = document.createElement("div");
+  card.className = "movie-card";
+  card.style.animationDelay = `${index * 40}ms`;
+
+  const posterDiv = document.createElement("div");
+  posterDiv.className = "card-poster";
+
+  const img = document.createElement("img");
+  img.src = posterSrc;
+  img.alt = movie.title;
+  img.loading = "lazy";
+
+  img.onerror = () => {
+    img.src = "Images/posterPlaceholder.jpg";
+  };
+
+  const ratingBadge = document.createElement("span");
+  ratingBadge.className = `card-rating ${ratingClass}`;
+  ratingBadge.textContent = `⭐ ${rating}`;
+
+  posterDiv.appendChild(img);
+  posterDiv.appendChild(ratingBadge);
+
+  const infoDiv = document.createElement("div");
+  infoDiv.className = "card-info";
+
+  const titleP = document.createElement("p");
+  titleP.className = "card-title";
+  titleP.textContent = movie.title;
+
+  const btn = document.createElement("button");
+  btn.className = "btn-add-watchlist";
+  btn.textContent = "Show Details";
+
+  infoDiv.appendChild(titleP);
+  infoDiv.appendChild(btn);
+
+  card.appendChild(posterDiv);
+  card.appendChild(infoDiv);
+
+  card.addEventListener("click", (e) => {
+    if (e.target.closest("button")) return;
+    navigateTo("details", movie.id);
+  });
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navigateTo("details", movie.id);
+  });
+
+  return card;
+}
 // const movieId = 550;
 async function loadMovieDetails(movieId) {
   const movieDetails = await ApiOps.getMovieDetails(movieId);
@@ -12,19 +74,16 @@ async function loadMovieDetails(movieId) {
 
   if (!movie) return;
 
+  // helpers
   function formatRuntime(minutes) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours}h ${mins}m`;
   }
 
-  const duration = formatRuntime(movie.runtime);
-
   function formatRating(rating) {
     return `${Math.round(rating * 10)}%`;
   }
-
-  const rating = formatRating(movie.rating);
 
   function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString("en-GB", {
@@ -33,6 +92,10 @@ async function loadMovieDetails(movieId) {
       year: "numeric",
     });
   }
+
+  const duration = formatRuntime(movie.runtime);
+  const rating = formatRating(movie.rating);
+
 
   detailsContent.innerHTML = `
                      <div
@@ -219,6 +282,10 @@ async function loadMovieDetails(movieId) {
   const similarDiv = document.getElementById("similarMovies");
   const recommendationsDiv = document.getElementById("recommendationsMovies");
 
+  actorsDiv.innerHTML = "";
+  similarDiv.innerHTML = "";
+  recommendationsDiv.innerHTML = "";
+
   const trailer = videos.find((v) => v.type === "Trailer");
 
   const trailerBtn = document.getElementById("trailerBtn");
@@ -248,66 +315,12 @@ async function loadMovieDetails(movieId) {
                     </div>`;
   });
 
-  similarMovies.map((movie) => {
-    const similarRating = formatRating(movie.rating);
-    similarDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/4 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
-            <div class="flex flex-col items-center justify-center relative rounded-2xl">
-              <div
-                class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden relative"
-              >
-                <img
-                   src="${movie.poster || "Images/posterPlaceholder.jpg"}"
-                  alt="Movie Poster"
-                  class="w-full h-full rounded-2xl object-cover group-hover:scale-110 transition-all duration-300"
-                />
-              </div>
-              <div
-                class="flex flex-col gap-2 justify-center items-center bg-black/70 inset-0 absolute rounded-2xl text-white group-hover:opacity-100 opacity-0 transition-all duration-300"
-              >
-                <p class="font-bold text-xl text-center">${movie.title}</p>
-                <p class="font-bold text-xl">
-                  <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
-                  <span class="text-[#E13661] font-bold text-xl">${similarRating}</span>
-                </p>
-                <button class="flex items-center transition-all duration-300 hover:text-[#E13661] showDetailsBtn" data-movie-id=${movie.id}>
-                  Show Details
-                  <i
-                    class="fa-solid fa-arrow-right-long transition-all duration-300 group-hover:translate-x-3"
-                  ></i>
-                </button>
-              </div>
-              </div>`;
+similarMovies.forEach((m, i) => {
+    similarDiv.appendChild(createMovieCard(m, i));
   });
 
-  recommendations.map((movie) => {
-    const recommendationRating = formatRating(movie.rating);
-    recommendationsDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/4 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
-            <div class="flex flex-col items-center justify-center relative rounded-2xl">
-              <div
-                class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden"
-              >
-                <img
-                  src="${movie.poster || "../Images/posterPlaceholder.jpg"}"
-                  alt="Movie Poster"
-                  class="w-full h-full rounded-2xl object-cover group-hover:scale-110 transition-all duration-300"
-                />
-              </div>
-              <div
-                class="flex flex-col gap-2 justify-center items-center bg-black/70 inset-0 absolute rounded-2xl text-white group-hover:opacity-100 opacity-0 transition-all duration-300"
-              >
-                <p class="font-bold text-xl text-center">${movie.title}</p>
-                <p class="font-bold text-xl">
-                  <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
-                  <span class="text-[#E13661] font-bold text-xl">${recommendationRating}</span>
-                </p>
-                <button class="flex items-center transition-all duration-300 hover:text-[#E13661] showDetailsBtn" data-movie-id=${movie.id}>
-                  Show Details
-                  <i
-                    class="fa-solid fa-arrow-right-long transition-all duration-300 group-hover:translate-x-3"
-                  ></i>
-                </button>
-              </div>
-              </div>`;
+ recommendations.forEach((m, i) => {
+    recommendationsDiv.appendChild(createMovieCard(m, i));
   });
 
   document.querySelectorAll(".showDetailsBtn").forEach((btn) => {
