@@ -139,35 +139,35 @@ function renderRegisterForm(containerId) {
     
     container.innerHTML = `
        <div class = "flex justify-center items-center min-h-screen">
-        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12 w-full">
+        <div class="max-w-md mx-auto p-6 rounded-lg mt-12 w-full bg-[#F8D7E3] shadow-[0_0_20px_#E13661]">
             <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
             <form id="register-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-gray-700 mb-2">First Name</label>
-                        <input type="text" name="first_name" required class="w-full px-3 py-2 border rounded-lg">
+                        <input type="text" name="first_name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#C1246B]">
                     </div>
                     <div>
                         <label class="block text-gray-700 mb-2">Last Name</label>
-                        <input type="text" name="last_name" required class="w-full px-3 py-2 border rounded-lg">
+                        <input type="text" name="last_name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#C1246B]">
                     </div>
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-2">Username</label>
-                    <input type="text" name="username" required class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" name="username" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#C1246B]">
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-2">Email</label>
-                    <input type="email" name="email" required class="w-full px-3 py-2 border rounded-lg">
+                    <input type="email" name="email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#C1246B]">
                 </div>
                 <div>
                     <label class="block text-gray-700 mb-2">Password</label>
-                    <input type="password" name="password" required minlength="6" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="password" name="password" required minlength="6" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#C1246B]">
                 </div>
                 <div id="register-error" class="text-red-500 text-sm hidden"></div>
-                <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Register</button>
+                <button type="submit" class="w-full bg-[#C1246B]  text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border border-transparent transition-all duration-300">Register</button>
             </form>
-            <p class="mt-4 text-center text-gray-600">Already have an account? <a href="javascript:void(0)" onclick="showLoginForm()" class="text-green-500 hover:underline">Login</a></p>
+            <p class="mt-4 text-center text-gray-600">Already have an account? <a href="javascript:void(0)" onclick="showLoginForm()" class="text-[#C1246B]  hover:underline">Login</a></p>
         </div></div>
     `;
     
@@ -203,21 +203,21 @@ function renderLoginForm(containerId) {
     
     container.innerHTML = `
         <div class = "flex justify-center items-center min-h-screen">
-        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12 w-full">
+        <div class="max-w-md mx-auto p-6 rounded-lg mt-12 w-full  bg-[#F8D7E3] shadow-[0_0_20px_#E13661]">
             <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-gray-700 mb-2">Email</label>
-                    <input type="email" name="email" required class="w-full px-3 py-2 border rounded-lg">
-                </div>
+                    <input type="email" name="email" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#C1246B]">
+                </div> 
                 <div>
                     <label class="block text-gray-700 mb-2">Password</label>
-                    <input type="password" name="password" required class="w-full px-3 py-2 border rounded-lg">
+                    <input type="password" name="password" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#C1246B]">
                 </div>
                 <div id="login-error" class="text-red-500 text-sm hidden"></div>
-                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Login</button>
+                <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border border-transparent transition-all duration-300">Login</button>
             </form>
-            <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="javascript:void(0)" onclick="showRegisterForm()" class="text-blue-500 hover:underline">Register</a></p>
+            <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="javascript:void(0)" onclick="showRegisterForm()" class="text-[#C1246B] hover:underline">Register</a></p>
         </div></div>
     `;
     
