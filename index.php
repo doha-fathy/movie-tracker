@@ -2,7 +2,7 @@
 require_once 'header.php';  
 ?>
 <!DOCTYPE html>
-<html lang="en" class="bg-[linear-gradient(to_right,#0f050b,#1a0813,#2a0d1f,#3a1028)]">
+<html class="background">
 
 <head>
     <meta charset="UTF-8">
@@ -21,8 +21,6 @@ require_once 'header.php';
 
     <main id="app"></main>
 
-    <footer></footer>
-
     <script src="Scripts/API_Ops.js"></script>
     <script src="Scripts/Auth.js"></script>
     <script src="Scripts/Movies.js"></script>
@@ -32,5 +30,7 @@ require_once 'header.php';
     <script src="Scripts/Profile.js"></script>
     <script src="Scripts/App.js"></script>
 </body>
+
+<?php require_once 'footer.php';  ?>
 
 </html>
