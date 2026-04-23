@@ -287,3 +287,22 @@
     height: 48px;
     border-width: 3px;
 }
+
+html.background,
+body {
+  min-height: 100%;
+  background: 
+    radial-gradient(ellipse at top left, #c45a20 0%, transparent 30%),
+    radial-gradient(ellipse at bottom left, #c45a20 0%, transparent 30%),
+    radial-gradient(ellipse at top right, #6b1a5a 0%, transparent 30%),
+    radial-gradient(ellipse at bottom right, #6b1a5a 0%, transparent 30%),
+    radial-gradient(ellipse at center, #1a0813 0%, #0f050b 100%) !important;
+}
+
+#similarMovies,
+#recommendationsMovies {
+  display: grid;
+  gap: 20px;
+  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
