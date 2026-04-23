@@ -1,6 +1,7 @@
 <?php
 
 require_once "DB_Ops.php";
+require_once 'vendor/autoload.php';
 
 $env = parse_ini_file(__DIR__ . '/.env');
 
@@ -221,6 +222,8 @@ function getProfile(){
     $user = $response['data'];
 
     unset($user['password_hash']);
+    unset($user['updated_at']);
+    unset($user['created_at']);
 
     respond(true, [
         "authenticated" => true,
@@ -269,31 +272,27 @@ function changePass(){
 
 
 function updateProfile() {
-
     global $userOps, $tokenOps, $env;
 
     $id = requireAuth();
 
-    $first = trim($_POST['first_name'] ?? '');
-    $last = trim($_POST['last_name'] ?? '');
-    $username = trim($_POST['username'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $photo = trim($_POST['photo'] ?? '');
+    $response = $userOps->getUserById($id);
+    if (!$response['success']) {
+        respond(false, null, "User not found");
+    }
+    $currentUser = $response['data'];
+
+    $first    = !empty(trim($_POST['first_name'] ?? '')) ? trim($_POST['first_name']) : $currentUser['first_name'];
+    $last     = !empty(trim($_POST['last_name'] ?? ''))  ? trim($_POST['last_name'])  : $currentUser['last_name'];
+    $username = !empty(trim($_POST['username'] ?? ''))   ? trim($_POST['username'])   : $currentUser['username'];
+    $email    = !empty(trim($_POST['email'] ?? ''))      ? trim($_POST['email'])      : $currentUser['email'];
+    $photo    = !empty(trim($_POST['photo'] ?? ''))      ? trim($_POST['photo'])      : $currentUser['photo'];
 
     if (!$first) respond(false, null, "First name required");
     if (!$username) respond(false, null, "Username required");
     if (!$email) respond(false, null, "Email required");
-
     if (!isValidUsername($username)) respond(false, null, "Invalid username");
     if (!isValidEmail($email)) respond(false, null, "Invalid email");
-
-    $response = $userOps->getUserById($_SESSION['user_id']);
-    
-    if (!$response['success']) {
-        respond(false, null, "Invalid credentials");
-    }
-
-    $currentUser = $response['data'];
 
     $isEmailChanged = ($email !== $currentUser['email']);
 
@@ -304,7 +303,6 @@ function updateProfile() {
     }
 
     if ($isEmailChanged) {
-
         $userOps->setVerifiedStatus($id, 0);
 
         $tokenRes = $tokenOps->createToken($id, 'verify_email');
@@ -313,16 +311,11 @@ function updateProfile() {
         }
 
         $token = $tokenRes['token'];
-
         $baseUrl = $env['APP_URL'];
+        
         $verifyLink = $baseUrl . "/auth.php?action=verify_email&token=$token";
 
-        $body = "
-        <h2>Verify your new email</h2>
-        <p>Click below:</p>
-        <a href='$verifyLink'>Verify Email</a>
-        ";
-
+        $body = "<h2>Verify your new email</h2><p>Click below:</p><a href='$verifyLink'>Verify Email</a>";
         sendEmail($email, "Verify your new email", $body);
     }
 
@@ -430,7 +423,7 @@ function verifyEmail() {
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php';
+
 
 function sendEmail($to, $subject, $body)
 {
