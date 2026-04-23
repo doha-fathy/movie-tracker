@@ -5,31 +5,28 @@ async function router() {
     isRouting = true;
 
     const params = new URLSearchParams(window.location.search);
-    const page   = params.get("page") || "login";
+    const page   = params.get("page") || "movies";
     const id     = params.get("id");
 
-    // const authStatus  = await checkAuthStatus();
-    // const publicPages = ["signup", "login"];
+    const authStatus = await checkAuthStatus();
 
-    // if (!authStatus.authenticated && !publicPages.includes(page)) {
-    //     window.history.replaceState({}, "", "?page=login");
-    //     renderNavbar(false);
-    //     loadLoginPage();
-    //     isRouting = false;
-    //     return;
-    // }
+    if (page === "watchlist" && !authStatus.authenticated) {
+        window.history.replaceState({}, "", "?page=login");
+        renderNavbar(false);
+        loadLoginPage();
+        isRouting = false;
+        return;
+    }
 
-    // if (authStatus.authenticated && publicPages.includes(page)) {
-    //     window.history.replaceState({}, "", "?page=movies");
-    //     renderNavbar(true);
-    //     loadMoviesPage();
-    //     isRouting = false;
-    //     return;
-    // }
+    if (authStatus.authenticated && (page === "login" || page === "signup")) {
+        window.history.replaceState({}, "", "?page=movies");
+        renderNavbar(true);
+        loadMoviesPage();
+        isRouting = false;
+        return;
+    }
 
-    // renderNavbar(authStatus.authenticated);
-
-    renderNavbar(true)
+    renderNavbar(authStatus.authenticated);
 
     switch (page) {
         case "signup":    loadSignupPage();    break;
@@ -39,7 +36,7 @@ async function router() {
         case "watchlist": loadWatchlistPage(); break;
         case "profile":   loadProfilePage();   break;
         case "details":   loadDetailsPage(id); break;
-        default:          loadLoginPage();
+        default:          loadMoviesPage();
     }
 
     isRouting = false;
@@ -55,26 +52,37 @@ window.addEventListener("popstate", router);
 
 function renderNavbar(isAuthenticated) {
     const navbar = document.getElementById("navbar");
-    if (!isAuthenticated) {
-        navbar.innerHTML = "";
-        return;
-    }
     navbar.innerHTML = `
         <nav class="fixed top-0 w-full bg-black/90 text-white px-6 py-4 flex justify-between items-center z-50">
             <h1 class="text-red-500 font-bold text-2xl cursor-pointer"
                 onclick="navigateTo('movies')">
-                MovieTracker
+                 MovieTracker
             </h1>
             <div class="flex gap-6 font-semibold">
                 <a onclick="navigateTo('movies')"    class="hover:text-red-400 cursor-pointer transition-all">Movies</a>
                 <a onclick="navigateTo('upcoming')"  class="hover:text-red-400 cursor-pointer transition-all">Upcoming</a>
                 <a onclick="navigateTo('watchlist')" class="hover:text-red-400 cursor-pointer transition-all">Watch List</a>
+                ${isAuthenticated ? `
                 <a onclick="navigateTo('profile')"   class="hover:text-red-400 cursor-pointer transition-all">Profile</a>
+                ` : ''}
             </div>
+            ${isAuthenticated ? `
             <button onclick="window.handleLogout()"
                 class="bg-red-500 px-4 py-1 rounded-lg hover:bg-red-600 transition-all">
                 Logout
             </button>
+            ` : `
+            <div class="flex gap-3">
+                <button onclick="navigateTo('login')"
+                    class="bg-red-500 px-4 py-1 rounded-lg hover:bg-red-600 transition-all">
+                    Login
+                </button>
+                <button onclick="navigateTo('signup')"
+                    class="border border-red-500 px-4 py-1 rounded-lg hover:bg-red-500 transition-all">
+                    Sign Up
+                </button>
+            </div>
+            `}
         </nav>
     `;
 }
@@ -91,27 +99,27 @@ function loadLoginPage() {
 
 function loadMoviesPage() {
     document.getElementById("app").innerHTML = `<div id="movies-content"></div>`;
-    loadMovies();       
+    loadMovies();
 }
 
 function loadUpcomingPage() {
     document.getElementById("app").innerHTML = `<div id="upcoming-content"></div>`;
-    loadUpcoming();      
+    loadUpcoming();
 }
 
 function loadWatchlistPage() {
     document.getElementById("app").innerHTML = `<div id="watchlist-container"></div>`;
-    loadWatchlist();    
+    loadWatchlist();
 }
 
 function loadProfilePage() {
     document.getElementById("app").innerHTML = `<div id="profile-container"></div>`;
-    renderProfilePage("profile-container"); 
+    renderProfilePage("profile-container");
 }
 
 function loadDetailsPage(id) {
     document.getElementById("app").innerHTML = `<div id="movie-details"></div>`;
-    loadMovieDetails(id);       
+    loadMovieDetails(id);
 }
 
 window.updateUIForAuth = async function () {
@@ -130,13 +138,10 @@ window.updateUIForAuth = async function () {
 window.handleLogout = async function () {
     if (confirm("Are you sure you want to logout?")) {
         await fetch("Auth.php?action=logout");
-        window.history.replaceState({}, "", "?page=login");
+        window.history.replaceState({}, "", "?page=movies");
         renderNavbar(false);
-        loadLoginPage();
+        loadMoviesPage();
     }
 };
 
-// router();
-
-renderNavbar(true);
-loadMoviesPage();
+router();

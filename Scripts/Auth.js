@@ -138,7 +138,8 @@ function renderRegisterForm(containerId) {
     if (!container) return;
     
     container.innerHTML = `
-        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12">
+       <div class = "flex justify-center items-center min-h-screen">
+        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12 w-full">
             <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
             <form id="register-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
@@ -167,7 +168,7 @@ function renderRegisterForm(containerId) {
                 <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Register</button>
             </form>
             <p class="mt-4 text-center text-gray-600">Already have an account? <a href="javascript:void(0)" onclick="showLoginForm()" class="text-green-500 hover:underline">Login</a></p>
-        </div>
+        </div></div>
     `;
     
     document.getElementById('register-form').addEventListener('submit', async (e) => {
@@ -206,7 +207,8 @@ function renderLoginForm(containerId) {
     if (!container) return;
     
     container.innerHTML = `
-        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12">
+        <div class = "flex justify-center items-center min-h-screen">
+        <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-12 w-full">
             <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
             <form id="login-form" class="space-y-4">
                 <div>
@@ -221,7 +223,7 @@ function renderLoginForm(containerId) {
                 <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">Login</button>
             </form>
             <p class="mt-4 text-center text-gray-600">Don't have an account? <a href="javascript:void(0)" onclick="showRegisterForm()" class="text-blue-500 hover:underline">Register</a></p>
-        </div>
+        </div></div>
     `;
     
     document.getElementById('login-form').addEventListener('submit', async (e) => {
