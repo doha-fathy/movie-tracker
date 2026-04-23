@@ -98,22 +98,22 @@ function loadLoginPage() {
 }
 
 function loadMoviesPage() {
-    document.getElementById("app").innerHTML = `<div id="movies-content"></div>`;
+    document.getElementById("app").innerHTML = `<div id="movies-content" class = "mt-20"></div>`;
     loadMovies();
 }
 
 function loadUpcomingPage() {
-    document.getElementById("app").innerHTML = `<div id="upcoming-content"></div>`;
+    document.getElementById("app").innerHTML = `<div id="upcoming-content" class = "mt-20"></div>`;
     loadUpcoming();
 }
 
 function loadWatchlistPage() {
-    document.getElementById("app").innerHTML = `<div id="watchlist-container"></div>`;
+    document.getElementById("app").innerHTML = `<div id="watchlist-container" class = "mt-20"></div>`;
     loadWatchlist();
 }
 
 function loadProfilePage() {
-    document.getElementById("app").innerHTML = `<div id="profile-container"></div>`;
+    document.getElementById("app").innerHTML = `<div id="profile-container" class = "mt-20"></div>`;
     renderProfilePage("profile-container");
 }
 
