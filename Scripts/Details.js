@@ -250,7 +250,7 @@ async function loadMovieDetails(movieId) {
 
   similarMovies.map((movie) => {
     const similarRating = formatRating(movie.rating);
-    similarDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
+    similarDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/4 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
             <div class="flex flex-col items-center justify-center relative rounded-2xl">
               <div
                 class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden relative"
@@ -269,7 +269,7 @@ async function loadMovieDetails(movieId) {
                   <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
                   <span class="text-[#E13661] font-bold text-xl">${similarRating}</span>
                 </p>
-                <button class="flex items-center showDetailsBtn" data-movie-id=${movie.id}>
+                <button class="flex items-center transition-all duration-300 hover:text-[#E13661] showDetailsBtn" data-movie-id=${movie.id}>
                   Show Details
                   <i
                     class="fa-solid fa-arrow-right-long transition-all duration-300 group-hover:translate-x-3"
@@ -281,7 +281,7 @@ async function loadMovieDetails(movieId) {
 
   recommendations.map((movie) => {
     const recommendationRating = formatRating(movie.rating);
-    recommendationsDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/5 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
+    recommendationsDiv.innerHTML += ` <div class="p-2 w-full lg:w-1/3 xl:w-1/4 group hover:cursor-pointer rounded-2xl hover:shadow-[2px_2px_20px_#ff95c5d4]">
             <div class="flex flex-col items-center justify-center relative rounded-2xl">
               <div
                 class="lg:w-[270px] w-full h-[250px] rounded-2xl overflow-hidden"
@@ -300,7 +300,7 @@ async function loadMovieDetails(movieId) {
                   <i class="fa-solid fa-star text-yellow-500 text-sm"></i>
                   <span class="text-[#E13661] font-bold text-xl">${recommendationRating}</span>
                 </p>
-                <button class="flex items-center showDetailsBtn" data-movie-id=${movie.id}>
+                <button class="flex items-center transition-all duration-300 hover:text-[#E13661] showDetailsBtn" data-movie-id=${movie.id}>
                   Show Details
                   <i
                     class="fa-solid fa-arrow-right-long transition-all duration-300 group-hover:translate-x-3"
