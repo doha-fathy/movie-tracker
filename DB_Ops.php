@@ -515,6 +515,49 @@ class UserOps
             return $this->error("Unable to update password. Please try again later.");
         }
     }
+
+    
+    //-----------------------------------------------------------------------------------------------
+
+    public function setVerifiedStatus($id, $status)
+    {
+        $stmt = $this->connection->prepare(
+            "UPDATE users SET is_verified = :status WHERE id = :id"
+        );
+
+        $stmt->execute([
+            "status" => $status,
+            "id" => $id
+        ]);
+
+        return $this->success(null, null);
+    }
+
+    //-----------------------------------------------------------------------------------------------
+
+    public function setNewPassword($id, $newPassword)
+    {
+        $id = filter_var($id, FILTER_VALIDATE_INT);
+        if ($id === false) {
+            return $this->error('Invalid user ID.');
+        }
+
+        try {
+            $stmt = $this->connection->prepare(
+                "UPDATE users SET password_hash = :password WHERE id = :id"
+            );
+
+            $stmt->execute([
+                "id" => $id,
+                "password" => password_hash($newPassword, PASSWORD_DEFAULT)
+            ]);
+
+            return $this->success(null, "Password updated successfully.");
+
+        } catch (PDOException $e) {
+            return $this->error("Database error.");
+        }
+    }
 }
 
 //======================================================================
@@ -707,5 +750,133 @@ class ReviewsOps
         } catch (PDOException $e) {
             return $this->error("Unable to load reviews. Please try again later.");
         }
+    }
+}
+
+
+class TokenOps
+{
+    private $connection;
+
+    public function __construct()
+    {
+        $database = new Database();
+        $this->connection = $database->getConnection();
+    }
+
+    public function createToken($userId, $type)
+    {
+        $userId = filter_var($userId, FILTER_VALIDATE_INT);
+
+        if (!$userId || !$type) {
+            return ["success" => false, "message" => "Invalid data"];
+        }
+
+        try {
+            // OPTIONAL: invalidate old tokens of same type
+            $stmt = $this->connection->prepare(
+                "UPDATE user_tokens 
+                 SET used = 1 
+                 WHERE user_id = :user_id AND type = :type AND used = 0"
+            );
+
+            $stmt->execute([
+                "user_id" => $userId,
+                "type" => $type
+            ]);
+
+            // create new token
+            $token = bin2hex(random_bytes(32));
+            $expires = date("Y-m-d H:i:s", time() + 3600);
+
+            $stmt = $this->connection->prepare(
+                "INSERT INTO user_tokens (user_id, token, type, expires_at)
+                 VALUES (:user_id, :token, :type, :expires)"
+            );
+
+            $stmt->execute([
+                "user_id" => $userId,
+                "token" => $token,
+                "type" => $type,
+                "expires" => $expires
+            ]);
+
+            return [
+                "success" => true,
+                "token" => $token
+            ];
+
+        } catch (PDOException $e) {
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
+        }
+    }
+
+    public function validateToken($token, $type)
+    {
+        try {
+            $stmt = $this->connection->prepare(
+                "SELECT * FROM user_tokens
+                 WHERE token = :token 
+                 AND type = :type 
+                 AND used = 0"
+            );
+
+            $stmt->execute([
+                "token" => $token,
+                "type" => $type
+            ]);
+
+            $record = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$record) {
+                return ["success" => false, "message" => "Invalid token"];
+            }
+
+            if (strtotime($record['expires_at']) < time()) {
+                return ["success" => false, "message" => "Token expired"];
+            }
+
+            return [
+                "success" => true,
+                "data" => $record
+            ];
+
+        } catch (PDOException $e) {
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
+        }
+    }
+
+    public function markTokenUsed($tokenId)
+    {
+        try {
+            $stmt = $this->connection->prepare(
+                "UPDATE user_tokens SET used = 1 WHERE id = :id"
+            );
+
+            $stmt->execute(["id" => $tokenId]);
+
+            return ["success" => true];
+
+        } catch (PDOException $e) {
+            return [
+                "success" => false,
+                "message" => "Database error"
+            ];
+        }
+    }
+
+    public function deleteExpiredTokens()
+    {
+        $stmt = $this->connection->prepare(
+            "DELETE FROM user_tokens WHERE expires_at < NOW()"
+        );
+
+        $stmt->execute();
     }
 }
