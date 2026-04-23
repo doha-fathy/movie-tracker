@@ -317,6 +317,7 @@ async function loadMovieDetails(movieId) {
     });
   });
 
+
   const reviewsContainer = document.getElementById("reviewsContainer");
   const showMoreBtn = document.getElementById("showMoreBtn");
 
