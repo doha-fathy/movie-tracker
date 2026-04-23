@@ -52,47 +52,39 @@ window.addEventListener("popstate", router);
 
 function renderNavbar(isAuthenticated) {
     const navbar = document.getElementById("navbar");
-    if (!navbar) return;
-    
-    // Common nav items for everyone
-    const commonNav = `
-        <button class="nav-link" onclick="navigateTo('movies')">Movies</button>
-        <button class="nav-link" onclick="navigateTo('upcoming')">Upcoming</button>
-        <button class="nav-link" onclick="navigateTo('watchlist')">Watch List</button>
-        <div class="search-wrap">
-            <input type="text" class="search-input" placeholder="Search movies..." id="globalSearchInput">
-            <button class="search-btn" id="globalSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </div>
-    `;
-    
-    if (!isAuthenticated) {
-        navbar.innerHTML = commonNav + `
-            <button class="btn-login" onclick="navigateTo('login')">Login</button>
-            <button class="btn-signup" onclick="navigateTo('signup')">Sign Up</button>
-        `;
-    } else {
-        navbar.innerHTML = commonNav + `
-            <button class="nav-link" onclick="navigateTo('profile')">
-                <i class="fa-solid fa-circle-user"></i> Profile
+    navbar.innerHTML = `
+        <nav class="fixed top-0 w-full bg-black/90 text-white px-6 py-4 flex justify-between items-center z-50">
+            <h1 class="text-red-500 font-bold text-2xl cursor-pointer"
+                onclick="navigateTo('movies')">
+                 MovieTracker
+            </h1>
+            <div class="flex gap-6 font-semibold">
+                <a onclick="navigateTo('movies')"    class="hover:text-red-400 cursor-pointer transition-all">Movies</a>
+                <a onclick="navigateTo('upcoming')"  class="hover:text-red-400 cursor-pointer transition-all">Upcoming</a>
+                <a onclick="navigateTo('watchlist')" class="hover:text-red-400 cursor-pointer transition-all">Watch List</a>
+                ${isAuthenticated ? `
+                <a onclick="navigateTo('profile')"   class="hover:text-red-400 cursor-pointer transition-all">Profile</a>
+                ` : ''}
+            </div>
+            ${isAuthenticated ? `
+            <button onclick="window.handleLogout()"
+                class="bg-red-500 px-4 py-1 rounded-lg hover:bg-red-600 transition-all">
+                Logout
             </button>
-            <button class="btn-logout" onclick="window.handleLogout()">Logout</button>
-        `;
-    }
-    
-    // Setup search
-    setTimeout(() => {
-        const searchInput = document.getElementById('globalSearchInput');
-        const searchBtn = document.getElementById('globalSearchBtn');
-        if (searchInput && searchBtn) {
-            searchBtn.onclick = () => {
-                const query = searchInput.value.trim();
-                if (query) navigateTo('movies');
-            };
-            searchInput.onkeypress = (e) => {
-                if (e.key === 'Enter') searchBtn.onclick();
-            };
-        }
-    }, 50);
+            ` : `
+            <div class="flex gap-3">
+                <button onclick="navigateTo('login')"
+                    class="bg-red-500 px-4 py-1 rounded-lg hover:bg-red-600 transition-all">
+                    Login
+                </button>
+                <button onclick="navigateTo('signup')"
+                    class="border border-red-500 px-4 py-1 rounded-lg hover:bg-red-500 transition-all">
+                    Sign Up
+                </button>
+            </div>
+            `}
+        </nav>
+    `;
 }
 
 function loadSignupPage() {
