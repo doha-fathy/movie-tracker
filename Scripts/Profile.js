@@ -1,124 +1,123 @@
-const PROFILE_URL = 'profile.php';
+const PROFILE_URL = "profile.php";
 
 function sanitizeString(input) {
-    if (typeof input !== 'string') return '';
-    return input.replace(/<[^>]*>/g, '').replace(/javascript:/gi, '').trim();
+  if (typeof input !== "string") return "";
+  return input
+    .replace(/<[^>]*>/g, "")
+    .replace(/javascript:/gi, "")
+    .trim();
 }
 
 async function fetchUserProfile() {
-    try {
-        const response = await fetch(PROFILE_URL + '?action=get_profile', {
-            credentials: 'include'
-        });
+  try {
+    const response = await fetch(PROFILE_URL + "?action=get_profile", {
+      credentials: "include",
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!data.success) {
-            return { success: false, error: data.message };
-        }
-
-        return { success: true, user: data.data };
-
-    } catch (error) {
-        return { success: false, error: 'Network error occurred' };
+    if (!data.success) {
+      return { success: false, error: data.message };
     }
+
+    return { success: true, user: data.data };
+  } catch (error) {
+    return { success: false, error: "Network error occurred" };
+  }
 }
 async function updateProfile(firstName, lastName) {
-    try {
-        const params = new URLSearchParams();
-        params.append('first_name', sanitizeString(firstName));
-        params.append('last_name', sanitizeString(lastName));
+  try {
+    const params = new URLSearchParams();
+    params.append("first_name", sanitizeString(firstName));
+    params.append("last_name", sanitizeString(lastName));
 
-        const response = await fetch(PROFILE_URL + '?action=update_profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            credentials: 'include',
-            body: params.toString()
-        });
+    const response = await fetch(PROFILE_URL + "?action=update_profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      credentials: "include",
+      body: params.toString(),
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!data.success) {
-            return { success: false, error: data.message };
-        }
-
-        return { success: true, message: data.message };
-
-    } catch (error) {
-        return { success: false, error: 'Failed to update profile' };
+    if (!data.success) {
+      return { success: false, error: data.message };
     }
+
+    return { success: true, message: data.message };
+  } catch (error) {
+    return { success: false, error: "Failed to update profile" };
+  }
 }
 async function changePassword(currentPassword, newPassword, confirmPassword) {
-    try {
-        if (newPassword !== confirmPassword) {
-            return { success: false, error: 'Passwords do not match' };
-        }
-
-        const params = new URLSearchParams();
-        params.append('old_password', currentPassword);
-        params.append('new_password', newPassword);
-
-        const response = await fetch(PROFILE_URL + '?action=change_password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            credentials: 'include',
-            body: params.toString()
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            return { success: false, error: data.message };
-        }
-
-        return { success: true, message: data.message };
-
-    } catch (error) {
-        return { success: false, error: 'Failed to change password' };
+  try {
+    if (newPassword !== confirmPassword) {
+      return { success: false, error: "Passwords do not match" };
     }
+
+    const params = new URLSearchParams();
+    params.append("old_password", currentPassword);
+    params.append("new_password", newPassword);
+
+    const response = await fetch(PROFILE_URL + "?action=change_password", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      credentials: "include",
+      body: params.toString(),
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      return { success: false, error: data.message };
+    }
+
+    return { success: true, message: data.message };
+  } catch (error) {
+    return { success: false, error: "Failed to change password" };
+  }
 }
 async function uploadPhoto(file) {
-    try {
-        if (!file) {
-            return { success: false, error: 'No file selected' };
-        }
-
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!allowedTypes.includes(file.type)) {
-            return { success: false, error: 'Only JPEG, PNG, and GIF are allowed' };
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            return { success: false, error: 'File size must be less than 5MB' };
-        }
-
-        const formData = new FormData();
-        formData.append('photo', file);
-
-        const response = await fetch(PROFILE_URL + '?action=upload_photo', {
-            method: 'POST',
-            credentials: 'include',
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            return { success: false, error: data.message };
-        }
-
-        return { success: true, photo: data.data.photo };
-
-    } catch (error) {
-        return { success: false, error: 'Failed to upload photo' };
+  try {
+    if (!file) {
+      return { success: false, error: "No file selected" };
     }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      return { success: false, error: "Only JPEG, PNG, and GIF are allowed" };
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return { success: false, error: "File size must be less than 5MB" };
+    }
+
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const response = await fetch(PROFILE_URL + "?action=upload_photo", {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      return { success: false, error: data.message };
+    }
+
+    return { success: true, photo: data.data.photo };
+  } catch (error) {
+    return { success: false, error: "Failed to upload photo" };
+  }
 }
 
 function renderProfilePage(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    
-container.innerHTML = `
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = `
     <div class="flex justify-center items-center min-h-screen px-4 py-12">
         <div class="max-w-2xl w-full rounded-2xl overflow-hidden border border-white/10 profile-card">
             <div class="relative h-28 bg-[#1a0a12]">
@@ -208,102 +207,135 @@ container.innerHTML = `
         </div>
     </div>
 `;
-    // Load profile data
-    loadProfileData();
-    
-    // Cache DOM elements
-    const editForm = document.getElementById('edit-profile-form');
-    const uploadForm = document.getElementById('upload-photo-form');
-    const passwordForm = document.getElementById('change-password-form');
-    const editError = document.getElementById('edit-error');
-    const uploadError = document.getElementById('upload-error');
-    const passwordError = document.getElementById('password-error');
-    
-    // Edit profile form
-    editForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const firstName = document.getElementById('first-name').value;
-        const lastName = document.getElementById('last-name').value;
-        
-        const result = await updateProfile(firstName, lastName);
-        
-        if (result.success) {
-            editError.classList.add('hidden');
-            await loadProfileData();
-            alert('Profile updated successfully');
-        } else {
-            editError.textContent = result.error;
-            editError.classList.remove('hidden');
-        }
-    });
-    
-    // Upload photo form
-    uploadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const photoInput = document.getElementById('photo-input');
-        const file = photoInput.files[0];
-        
-        const result = await uploadPhoto(file);
-        
-        if (result.success) {
-            uploadError.classList.add('hidden');
-            document.getElementById('profile-photo').src = result.photo;
-            photoInput.value = '';
-        } else {
-            uploadError.textContent = result.error;
-            uploadError.classList.remove('hidden');
-        }
-    });
-    
-    // Change password form
-    passwordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const currentPassword = document.getElementById('current-password').value;
-        const newPassword = document.getElementById('new-password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
-        
-        const result = await changePassword(currentPassword, newPassword, confirmPassword);
-        
-        if (result.success) {
-            passwordError.classList.add('hidden');
-            passwordForm.reset();
-            alert('Password changed successfully');
-        } else {
-            passwordError.textContent = result.error;
-            passwordError.classList.remove('hidden');
-        }
-    });
+  // Load profile data
+  loadProfileData();
+
+  // Cache DOM elements
+  const editForm = document.getElementById("edit-profile-form");
+  const uploadForm = document.getElementById("upload-photo-form");
+  const passwordForm = document.getElementById("change-password-form");
+  const editError = document.getElementById("edit-error");
+  const uploadError = document.getElementById("upload-error");
+  const passwordError = document.getElementById("password-error");
+
+  // Edit profile form
+  editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const firstName = document.getElementById("first-name").value;
+    const lastName = document.getElementById("last-name").value;
+
+    const result = await updateProfile(firstName, lastName);
+
+    if (result.success) {
+      editError.classList.add("hidden");
+      await loadProfileData();
+      Swal.fire({
+        title: "Success!",
+        text: "Profile updated successfully.",
+        icon: "success",
+        background: "#1a0a12",
+        color: "#fff",
+        confirmButtonColor: "#C1246B",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      editError.textContent = result.error;
+      editError.classList.remove("hidden");
+    }
+  });
+
+  // Upload photo form
+  uploadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const photoInput = document.getElementById("photo-input");
+    const file = photoInput.files[0];
+
+    const result = await uploadPhoto(file);
+
+    if (result.success) {
+      uploadError.classList.add("hidden");
+      document.getElementById("profile-photo").src = result.photo;
+      photoInput.value = "";
+      Swal.fire({
+        title: "Success!",
+        text: "Profile photo updated.",
+        icon: "success",
+        background: "#1a0a12",
+        color: "#fff",
+        confirmButtonColor: "#C1246B",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      uploadError.textContent = result.error;
+      uploadError.classList.remove("hidden");
+    }
+  });
+
+  // Change password form
+  passwordForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById("current-password").value;
+    const newPassword = document.getElementById("new-password").value;
+    const confirmPassword = document.getElementById("confirm-password").value;
+
+    const result = await changePassword(
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    );
+
+    if (result.success) {
+      passwordError.classList.add("hidden");
+      passwordForm.reset();
+      Swal.fire({
+        title: "Success!",
+        text: "Password changed successfully.",
+        icon: "success",
+        background: "#1a0a12",
+        color: "#fff",
+        confirmButtonColor: "#C1246B",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      passwordError.textContent = result.error;
+      passwordError.classList.remove("hidden");
+    }
+  });
 }
 
 async function loadProfileData() {
-    const result = await fetchUserProfile();
-    
-    if (result.success && result.user) {
-        const user = result.user;
-        document.getElementById('profile-name').textContent = `${user.first_name} ${user.last_name}`;
-        document.getElementById('profile-email').textContent = user.email;
-        document.getElementById('first-name').value = user.first_name;
-        document.getElementById('last-name').value = user.last_name;
-        
-        if (user.photo) {
-            document.getElementById('profile-photo').src = user.photo;
-        }
+  const result = await fetchUserProfile();
+
+  if (result.success && result.user) {
+    const user = result.user;
+    document.getElementById("profile-name").textContent =
+      `${user.first_name} ${user.last_name}`;
+    document.getElementById("profile-email").textContent = user.email;
+    document.getElementById("first-name").value = user.first_name;
+    document.getElementById("last-name").value = user.last_name;
+
+    if (user.photo) {
+      document.getElementById("profile-photo").src = user.photo;
     }
+  }
 }
 
 // document.addEventListener('DOMContentLoaded', async () => {
 //     // Check if user is authenticated
 //     const authStatus = await Auth.checkAuthStatus();
-    
+
 //     if (!authStatus.authenticated) {
 //         // Redirect to login
 //         window.location.href = 'index.php';
 //         return;
 //     }
-    
+
 //     // Load profile page if container exists
 //     if (document.getElementById('profile-container')) {
 //         renderProfilePage('profile-container');
@@ -311,10 +343,10 @@ async function loadProfileData() {
 // });
 
 window.Profile = {
-    fetchUserProfile,
-    updateProfile,
-    changePassword,
-    uploadPhoto,
-    renderProfilePage,
-    loadProfileData
+  fetchUserProfile,
+  updateProfile,
+  changePassword,
+  uploadPhoto,
+  renderProfilePage,
+  loadProfileData,
 };

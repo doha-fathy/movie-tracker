@@ -226,12 +226,25 @@ window.updateUIForAuth = async function () {
 };
 
 window.handleLogout = async function () {
-  if (confirm("Are you sure you want to logout?")) {
-    await fetch("Auth.php?action=logout");
-    window.history.replaceState({}, "", "?page=movies");
-    renderNavbar(false);
-    loadMoviesPage();
-  }
+  const result = await Swal.fire({
+    title: "Logout?",
+    text: "Are you sure you want to logout?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#C1246B",
+    cancelButtonColor: "rgba(255,255,255,0.1)",
+    confirmButtonText: "Yes, logout",
+    cancelButtonText: "Cancel",
+    background: "#1a0a12",
+    color: "#fff",
+  });
+
+  if (!result.isConfirmed) return;
+
+  await fetch("Auth.php?action=logout");
+  window.history.replaceState({}, "", "?page=movies");
+  renderNavbar(false);
+  loadMoviesPage();
 };
 
 window.updateUIForAuth = async function () {
