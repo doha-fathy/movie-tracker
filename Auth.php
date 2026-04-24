@@ -477,38 +477,94 @@ use PHPMailer\PHPMailer\Exception;
 // }
 
 
-function sendEmail($to, $subject, $body) {
-    global $env; // Assuming your Gmail credentials are in your $env array
+// function sendEmail($to, $subject, $body) {
+//     global $env; // Assuming your Gmail credentials are in your $env array
     
-    $mail = new PHPMailer(true);
+//     $mail = new PHPMailer(true);
 
-    try {
-        // --- 1. Attempt SMTP (Gmail) ---
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $env['SMTP_USER']; // Your Gmail
-        $mail->Password   = $env['SMTP_PASS']; // Your App Password
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-        $mail->Timeout    = 5; // Low timeout so it fails fast if blocked
+//     try {
+//         // --- 1. Attempt SMTP (Gmail) ---
+//         $mail->isSMTP();
+//         $mail->Host       = 'smtp.gmail.com';
+//         $mail->SMTPAuth   = true;
+//         $mail->Username   = $env['SMTP_USER']; // Your Gmail
+//         $mail->Password   = $env['SMTP_PASS']; // Your App Password
+//         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+//         $mail->Port       = 587;
+//         $mail->Timeout    = 5; // Low timeout so it fails fast if blocked
 
-        $mail->setFrom($env['SMTP_USER'], 'Movie Tracker');
-        $mail->addAddress($to);
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $body;
+//         $mail->setFrom($env['SMTP_USER'], 'Movie Tracker');
+//         $mail->addAddress($to);
+//         $mail->isHTML(true);
+//         $mail->Subject = $subject;
+//         $mail->Body    = $body;
 
-        $mail->send();
+//         $mail->send();
+//         return true;
+
+//     } catch (Exception $e) {
+//         // --- 2. Fallback to Native PHP Mail ---
+//         // This runs if InfinityFree blocks Port 587
+//         $headers = "MIME-Version: 1.0" . "\r\n";
+//         $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+//         $headers .= "From: <" . $env['SMTP_USER'] . ">" . "\r\n";
+
+//         return mail($to, $subject, $body, $headers);
+//     }
+// }
+
+
+function sendEmail($to, $subject, $body) {
+    global $env;
+
+    $apiKey = $env['BREVO_KEY'];
+
+    $data = [
+        "sender" => [
+            "name" => "Movie Mania",
+            "email" => $env['SMTP_USER'] // MUST be verified in Brevo
+        ],
+        "to" => [
+            [
+                "email" => $to
+            ]
+        ],
+        "subject" => $subject,
+        "htmlContent" => $body
+    ];
+
+    $ch = curl_init();
+
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $env['BREVO_API'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            "accept: application/json",
+            "api-key: $apiKey",
+            "content-type: application/json"
+        ],
+        CURLOPT_POSTFIELDS => json_encode($data),
+    ]);
+
+    $response = curl_exec($ch);
+    $err = curl_error($ch);
+
+    curl_close($ch);
+
+    if ($err) {
+        error_log("Brevo cURL Error: " . $err);
+        return false;
+    }
+
+    $result = json_decode($response, true);
+
+    // Optional: check success
+    if (isset($result['messageId'])) {
         return true;
-
-    } catch (Exception $e) {
-        // --- 2. Fallback to Native PHP Mail ---
-        // This runs if InfinityFree blocks Port 587
-        $headers = "MIME-Version: 1.0" . "\r\n";
-        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-        $headers .= "From: <" . $env['SMTP_USER'] . ">" . "\r\n";
-
-        return mail($to, $subject, $body, $headers);
+    } else {
+        error_log("Brevo API Error: " . $response);
+        error_log("API KEY: " . $apiKey);
+        return false;
     }
 }
