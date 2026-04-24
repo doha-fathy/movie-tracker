@@ -25,14 +25,15 @@ async function fetchUserProfile() {
 }
 async function updateProfile(firstName, lastName) {
     try {
+        const params = new URLSearchParams();
+        params.append('first_name', sanitizeString(firstName));
+        params.append('last_name', sanitizeString(lastName));
+
         const response = await fetch(PROFILE_URL + '?action=update_profile', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             credentials: 'include',
-            body: JSON.stringify({
-                first_name: sanitizeString(firstName),
-                last_name: sanitizeString(lastName)
-            })
+            body: params.toString()
         });
 
         const data = await response.json();
@@ -41,7 +42,7 @@ async function updateProfile(firstName, lastName) {
             return { success: false, error: data.message };
         }
 
-        return { success: true, user: data.data };
+        return { success: true, message: data.message };
 
     } catch (error) {
         return { success: false, error: 'Failed to update profile' };
@@ -53,14 +54,15 @@ async function changePassword(currentPassword, newPassword, confirmPassword) {
             return { success: false, error: 'Passwords do not match' };
         }
 
+        const params = new URLSearchParams();
+        params.append('old_password', currentPassword);
+        params.append('new_password', newPassword);
+
         const response = await fetch(PROFILE_URL + '?action=change_password', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             credentials: 'include',
-            body: JSON.stringify({
-                current_password: currentPassword,
-                new_password: newPassword
-            })
+            body: params.toString()
         });
 
         const data = await response.json();
@@ -91,10 +93,9 @@ async function uploadPhoto(file) {
         }
 
         const formData = new FormData();
-        formData.append('action', 'upload_photo');
         formData.append('photo', file);
 
-        const response = await fetch(PROFILE_URL, {
+        const response = await fetch(PROFILE_URL + '?action=upload_photo', {
             method: 'POST',
             credentials: 'include',
             body: formData
@@ -118,72 +119,73 @@ function renderProfilePage(containerId) {
     if (!container) return;
     
     container.innerHTML = `
-        <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-            <h1 class="text-3xl font-bold mb-6">My Profile</h1>
+        <div class="flex justify-center items-center min-h-screen">
+        <div class="max-w-2xl w-full p-6 rounded-lg mt-12 bg-[#F8D7E3] shadow-[0_0_20px_#E13661]">
+            <h1 class="text-3xl font-bold mb-6 text-center text-[#C1246B]">My Profile</h1>
             
             <!-- Profile Info Section -->
             <div class="mb-8">
-                <div class="flex items-center mb-6">
-                    <img id="profile-photo" src="https://via.placeholder.com/100" alt="Profile Photo" class="w-24 h-24 rounded-full mr-6 object-cover">
-                    <div>
-                        <h2 id="profile-name" class="text-2xl font-bold"></h2>
-                        <p id="profile-email" class="text-gray-600"></p>
+                <div class="flex items-center mb-6 justify-center">
+                    <div class="text-center">
+                        <img id="profile-photo" src="https://via.placeholder.com/100" alt="Profile Photo" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-[#C1246B]">
+                        <h2 id="profile-name" class="text-2xl font-bold text-[#C1246B]"></h2>
+                        <p id="profile-email" class="text-[#C1246B]"></p>
                     </div>
                 </div>
             </div>
             
             <!-- Edit Profile Form -->
-            <div class="mb-8 border-t pt-6">
-                <h3 class="text-xl font-bold mb-4">Edit Profile</h3>
+            <div class="mb-8 border-t-2 border-[#C1246B] pt-6">
+                <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Edit Profile</h3>
                 <form id="edit-profile-form" class="space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 mb-2">First Name</label>
-                            <input type="text" id="first-name" name="first_name" required class="w-full px-3 py-2 border rounded-lg">
+                            <label class="block text-[#C1246B] font-semibold mb-2">First Name</label>
+                            <input type="text" id="first-name" name="first_name" required class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                         </div>
                         <div>
-                            <label class="block text-gray-700 mb-2">Last Name</label>
-                            <input type="text" id="last-name" name="last_name" required class="w-full px-3 py-2 border rounded-lg">
+                            <label class="block text-[#C1246B] font-semibold mb-2">Last Name</label>
+                            <input type="text" id="last-name" name="last_name" required class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                         </div>
                     </div>
-                    <div id="edit-error" class="text-red-500 text-sm hidden"></div>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Update Profile</button>
+                    <div id="edit-error" class="text-red-600 text-sm font-semibold hidden"></div>
+                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border-2 border-transparent transition-all duration-300 font-semibold">Update Profile</button>
                 </form>
             </div>
             
             <!-- Upload Photo Section -->
-            <div class="mb-8 border-t pt-6">
-                <h3 class="text-xl font-bold mb-4">Change Profile Photo</h3>
+            <div class="mb-8 border-t-2 border-[#C1246B] pt-6">
+                <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Change Profile Photo</h3>
                 <form id="upload-photo-form" class="space-y-4">
                     <div>
-                        <input type="file" id="photo-input" name="photo" accept="image/*" class="w-full">
+                        <input type="file" id="photo-input" name="photo" accept="image/*" class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg">
                     </div>
-                    <div id="upload-error" class="text-red-500 text-sm hidden"></div>
-                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Upload Photo</button>
+                    <div id="upload-error" class="text-red-600 text-sm font-semibold hidden"></div>
+                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border-2 border-transparent transition-all duration-300 font-semibold">Upload Photo</button>
                 </form>
             </div>
             
             <!-- Change Password Section -->
-            <div class="mb-8 border-t pt-6">
-                <h3 class="text-xl font-bold mb-4">Change Password</h3>
+            <div class="mb-8 border-t-2 border-[#C1246B] pt-6">
+                <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Change Password</h3>
                 <form id="change-password-form" class="space-y-4">
                     <div>
-                        <label class="block text-gray-700 mb-2">Current Password</label>
-                        <input type="password" id="current-password" name="current_password" required class="w-full px-3 py-2 border rounded-lg">
+                        <label class="block text-[#C1246B] font-semibold mb-2">Current Password</label>
+                        <input type="password" id="current-password" name="current_password" required class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                     </div>
                     <div>
-                        <label class="block text-gray-700 mb-2">New Password</label>
-                        <input type="password" id="new-password" name="new_password" required minlength="6" class="w-full px-3 py-2 border rounded-lg">
+                        <label class="block text-[#C1246B] font-semibold mb-2">New Password</label>
+                        <input type="password" id="new-password" name="new_password" required minlength="6" class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                     </div>
                     <div>
-                        <label class="block text-gray-700 mb-2">Confirm Password</label>
-                        <input type="password" id="confirm-password" name="confirm_password" required minlength="6" class="w-full px-3 py-2 border rounded-lg">
+                        <label class="block text-[#C1246B] font-semibold mb-2">Confirm Password</label>
+                        <input type="password" id="confirm-password" name="confirm_password" required minlength="6" class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                     </div>
-                    <div id="password-error" class="text-red-500 text-sm hidden"></div>
-                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Change Password</button>
+                    <div id="password-error" class="text-red-600 text-sm font-semibold hidden"></div>
+                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border-2 border-transparent transition-all duration-300 font-semibold">Change Password</button>
                 </form>
             </div>
-        </div>
+        </div></div>
     `;
     
     // Load profile data
@@ -209,6 +211,7 @@ function renderProfilePage(containerId) {
         if (result.success) {
             editError.classList.add('hidden');
             await loadProfileData();
+            alert('Profile updated successfully');
         } else {
             editError.textContent = result.error;
             editError.classList.remove('hidden');
