@@ -1,4 +1,5 @@
 const PROFILE_URL = "profile.php";
+const UPLOAD_URL = "Upload.php";
 
 function sanitizeString(input) {
   if (typeof input !== "string") return "";
@@ -95,7 +96,7 @@ async function uploadPhoto(file) {
     const formData = new FormData();
     formData.append("photo", file);
 
-    const response = await fetch(PROFILE_URL + "?action=upload_photo", {
+const response = await fetch(UPLOAD_URL + "?action=upload_photo", {
       method: "POST",
       credentials: "include",
       body: formData,
