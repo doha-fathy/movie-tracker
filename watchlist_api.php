@@ -4,7 +4,8 @@ require_once "DB_Ops.php";
 header('Content-Type: application/json');
 session_start();
 
-//------------------------Unified JSON response helper---------------------------
+
+//------------------------ Unified JSON response helper ---------------------------
 function respond($success, $message, $data = null, $status = 200)
 {
     http_response_code($status);
@@ -16,26 +17,36 @@ function respond($success, $message, $data = null, $status = 200)
     exit;
 }
 
-//------------------------Auth check-----------------------------------
+//------------------------ Auth check ---------------------------------------------
+
+
 if (!isset($_SESSION['user_id'])) {
     respond(false, "Unauthorized", null, 401);
 }
 
 $watchlist = new WatchlistOps();
 
+
+
 try {
 
-    //----------------------- GET → Fetch user watchlist ------------------
+    //----------------------- GET → Fetch user watchlist ---------------------------
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
-        $movies = $watchlist->getUserMovies($_SESSION['user_id']);
 
-        respond(true, "Watchlist fetched successfully", $movies);
+        $result = $watchlist->getUserMovies($_SESSION['user_id']);
+
+        respond(
+            $result['success'],
+            $result['message'] ?? "Watchlist fetched successfully",
+            $result['data']
+        );
     }
 
-    //------------------------ POST → Add / Delete----------------------
-
+    //------------------------ POST → Add / Delete --------------------------------
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+
 
         $raw = file_get_contents("php://input");
         $data = json_decode($raw, true);
@@ -45,8 +56,7 @@ try {
             respond(false, "Invalid JSON format", null, 400);
         }
 
-        $action  = $data['action']   ?? null;
-        $movieId = $data['movie_id'] ?? null;
+        $action = $data['action'] ?? null;
 
         // Validate action
         $allowedActions = ['add', 'delete'];
@@ -54,41 +64,55 @@ try {
             respond(false, "Invalid action. Allowed: add, delete", null, 400);
         }
 
-        // Validate movie_id
-        $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
-        if (!$movieId) {
-            respond(false, "Invalid movie_id (must be integer)", null, 400);
-        }
-
-        // ADD Movie to watchlist
+        //------------------------ ADD ------------------------
         if ($action === 'add') {
 
-            $result = $watchlist->addToWatchlist($_SESSION['user_id'], $movieId);
+            $movieId = $data['tmdb_id'] ?? null;
+            $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
 
-            if (isset($result['error'])) {
-                respond(false, $result['error'], null, 400);
+            if (!$movieId) {
+                respond(false, "Invalid tmdb_id", null, 400);
             }
 
-            respond(true, "Movie added to watchlist", $result);
+            $movieData = [
+                'tmdb_id' => $movieId,
+                'title' => $data['title'] ?? '',
+                'poster_path' => $data['poster_path'] ?? '',
+                'release_date' => $data['release_date'] ?? '',
+                'description' => $data['description'] ?? ''
+            ];
+
+            $result = $watchlist->addToWatchlist($_SESSION['user_id'], $movieData);
+
+            if (!$result['success']) {
+                respond(false, $result['message'], null, 400);
+            }
+
+            respond(true, $result['message'], null);
         }
 
-        //DELETE Movie from watchlist
+        //------------------------ DELETE ------------------------
         if ($action === 'delete') {
+
+            $movieId = $data['movie_id'] ?? null;
+            $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
+
+            if (!$movieId) {
+                respond(false, "Invalid movie_id", null, 400);
+            }
 
             $result = $watchlist->removeFromWatchlist($_SESSION['user_id'], $movieId);
 
-            if (isset($result['error'])) {
-                respond(false, $result['error'], null, 400);
+            if (!$result['success']) {
+                respond(false, $result['message'], null, 400);
             }
 
-            respond(true, "Movie removed from watchlist", $result);
+            respond(true, $result['message'], null);
         }
     }
 
-    // Method not allowed
+    //------------------------ Method not allowed ---------------------------------
     respond(false, "Method not allowed", null, 405);
 } catch (Throwable $e) {
-
-
     respond(false, "Internal server error", null, 500);
 }
