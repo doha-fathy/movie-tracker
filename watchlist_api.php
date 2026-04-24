@@ -24,6 +24,14 @@ if (!isset($_SESSION['user_id'])) {
     respond(false, "Unauthorized", null, 401);
 }
 
+//------------------------ Check if user is verified -----------------------------
+$userOps = new UserOps();
+$userResponse = $userOps->getUserById($_SESSION['user_id']);
+
+if (!$userResponse['success'] || empty($userResponse['data']['is_verified'])) {
+    respond(false, "Please verify your email first", null, 403);
+}
+
 $watchlist = new WatchlistOps();
 
 
