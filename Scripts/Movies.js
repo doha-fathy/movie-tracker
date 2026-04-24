@@ -216,7 +216,7 @@ const Movies = (() => {
     }
   }
 
-  return { init };
+  return { init, createCard: _createCard }; // return fomatted movie card (used to display search results)
 })();
 
 function loadMovies() {
