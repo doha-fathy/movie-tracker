@@ -120,7 +120,7 @@ function renderProfilePage(containerId) {
     
     container.innerHTML = `
         <div class="flex justify-center items-center min-h-screen">
-        <div class="max-w-2xl w-full p-6 rounded-lg mt-12 bg-[#F8D7E3] shadow-[0_0_20px_#E13661]">
+        <div class="max-w-2xl w-full p-6 rounded-lg mt-12 bg-[#F8D7E3] shadow-[0_0_10px_#E13661]">
             <h1 class="text-3xl font-bold mb-6 text-center text-[#C1246B]">My Profile</h1>
             
             <!-- Profile Info Section -->
@@ -141,15 +141,15 @@ function renderProfilePage(containerId) {
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[#C1246B] font-semibold mb-2">First Name</label>
-                            <input type="text" id="first-name" name="first_name" required class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
+                            <input type="text" id="first-name" name="first_name" required class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                         </div>
                         <div>
                             <label class="block text-[#C1246B] font-semibold mb-2">Last Name</label>
-                            <input type="text" id="last-name" name="last_name" required class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
+                            <input type="text" id="last-name" name="last_name" required class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                         </div>
                     </div>
                     <div id="edit-error" class="text-red-600 text-sm font-semibold hidden"></div>
-                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border-2 border-transparent transition-all duration-300 font-semibold">Update Profile</button>
+                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B]/50 border border-transparent transition-all duration-300 font-semibold">Update Profile</button>
                 </form>
             </div>
             
@@ -158,28 +158,28 @@ function renderProfilePage(containerId) {
                 <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Change Profile Photo</h3>
                 <form id="upload-photo-form" class="space-y-4">
                     <div>
-                        <input type="file" id="photo-input" name="photo" accept="image/*" class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg">
+                        <input type="file" id="photo-input" name="photo" accept="image/*" class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg">
                     </div>
                     <div id="upload-error" class="text-red-600 text-sm font-semibold hidden"></div>
-                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border-2 border-transparent transition-all duration-300 font-semibold">Upload Photo</button>
+                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border border-transparent transition-all duration-300 font-semibold">Upload Photo</button>
                 </form>
             </div>
             
             <!-- Change Password Section -->
-            <div class="mb-8 border-t-2 border-[#C1246B] pt-6">
+            <div class="mb-8 border-t-2/50 pt-6">
                 <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Change Password</h3>
                 <form id="change-password-form" class="space-y-4">
                     <div>
                         <label class="block text-[#C1246B] font-semibold mb-2">Current Password</label>
-                        <input type="password" id="current-password" name="current_password" required class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
+                        <input type="password" id="current-password" name="current_password" required class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                     </div>
                     <div>
                         <label class="block text-[#C1246B] font-semibold mb-2">New Password</label>
-                        <input type="password" id="new-password" name="new_password" required minlength="6" class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
+                        <input type="password" id="new-password" name="new_password" required minlength="6" class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                     </div>
                     <div>
                         <label class="block text-[#C1246B] font-semibold mb-2">Confirm Password</label>
-                        <input type="password" id="confirm-password" name="confirm_password" required minlength="6" class="w-full px-3 py-2 border-2 border-[#C1246B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
+                        <input type="password" id="confirm-password" name="confirm_password" required minlength="6" class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
                     </div>
                     <div id="password-error" class="text-red-600 text-sm font-semibold hidden"></div>
                     <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border-2 border-transparent transition-all duration-300 font-semibold">Change Password</button>
