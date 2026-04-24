@@ -464,57 +464,30 @@ class UserOps
 
     //-----------------------------------------------------------------------------------------------
 
-    public function changePassword($id, $oldPassword, $newPassword)
-    {
-        $id = filter_var($id, FILTER_VALIDATE_INT);
+  public function changePassword($id, $newPassword)
+{
+    $id = filter_var($id, FILTER_VALIDATE_INT);
 
-        if (!$id) {
-            return $this->error("Invalid user. Please try again.");
-        }
-
-        if (empty($oldPassword) || empty($newPassword)) {
-            return $this->error("All password fields are required.");
-        }
-
-        /* if (strlen($newPassword) < 6) {
-            return $this->error("New password must be at least 6 characters.");
-        }*/
-
-        if ($oldPassword === $newPassword) {
-            return $this->error("New password must be different from the current password.");
-        }
-
-        $userResponse = $this->getUserById($id);
-
-        if (!$userResponse['success']) {
-            return $this->error("User not found.");
-        }
-
-        $user = $userResponse['data'];
-
-        // verify old password
-        if (!password_verify($oldPassword, $user['password_hash'])) {
-            return $this->error("Current password is incorrect.");
-        }
-
-        try {
-            $stmt = $this->connection->prepare("UPDATE users SET password_hash = :password WHERE id = :id");
-
-            $stmt->execute([
-                "id" => $id,
-                "password" => password_hash($newPassword, PASSWORD_DEFAULT)
-            ]);
-
-            if ($stmt->rowCount() === 0) {
-                return $this->error("Password update failed. Please try again.");
-            }
-
-            return $this->success(null, "Password updated successfully.");
-        } catch (PDOException $e) {
-            return $this->error("Unable to update password. Please try again later.");
-        }
+    if (!$id) {
+        return $this->error("Invalid user.");
     }
 
+    try {
+        $stmt = $this->connection->prepare(
+            "UPDATE users SET password_hash = :password WHERE id = :id"
+        );
+
+        $stmt->execute([
+            "id" => $id,
+            "password" => password_hash($newPassword, PASSWORD_DEFAULT)
+        ]);
+
+        return $this->success(null, "Password updated successfully.");
+
+    } catch (PDOException $e) {
+        return $this->error("Unable to update password.");
+    }
+}
 
     //-----------------------------------------------------------------------------------------------
 

@@ -200,7 +200,7 @@ const Movies = (() => {
       console.log("Watchlist Response:", result);
 
       if (!result.success) {
-        btn.textContent = result.message || "✗ Error";
+        btn.textContent = "✗ Error";
         btn.classList.add("btn-error");
         btn.disabled = false;
       } else {

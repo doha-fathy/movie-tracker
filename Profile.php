@@ -142,6 +142,8 @@ function updateProfile() {
 
 
 
+
+
 function changePassword() {
     global $userOps;
 
@@ -150,35 +152,37 @@ function changePassword() {
     $oldPassword = trim($_POST['old_password'] ?? '');
     $newPassword = trim($_POST['new_password'] ?? '');
 
-    if (!$oldPassword) respond(false, null, "Old password required");
-    if (!$newPassword) respond(false, null, "New password required");
-    if (!isValidPassword($newPassword)) respond(false, null, "Password length must be between 6 and 30");
+    if (!$oldPassword) respond(false, "Old password required");
+    if (!$newPassword) respond(false, "New password required");
 
-    $response = $userOps->getUserById($_SESSION['user_id']);
-    
+    if (!isValidPassword($newPassword)) {
+        respond(false, "Password length must be between 6 and 30");
+    }
+
+    $response = $userOps->getUserById($id);
+
     if (!$response['success']) {
-        respond(false, null, "Invalid credentials");
+        respond(false, "User not found");
     }
 
     $user = $response['data'];
 
     if (!password_verify($oldPassword, $user['password_hash'])) {
-        respond(false, null, "Old password incorrect");
+        respond(false, "Old password incorrect");
     }
 
     if (password_verify($newPassword, $user['password_hash'])) {
-        respond(false, null, "New password must be different");
+        respond(false, "New password must be different");
     }
 
-    $result = $userOps->changePassword($id, $oldPassword, $newPassword);
+    $result = $userOps->changePassword($id, $newPassword);
 
     if (!$result['success']) {
-        respond(false, null, $result['message']);
+        respond(false, $result['message']);
     }
 
-    respond(true, null, $result['message']);
+    respond(true, $result['message']);
 }
-
 
 
 
