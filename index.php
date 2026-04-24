@@ -1,5 +1,5 @@
 <?php
-require_once 'header.php';  
+require_once 'header.php';
 ?>
 <!DOCTYPE html>
 <html class="background">
@@ -12,12 +12,17 @@ require_once 'header.php';
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="Styles/Movies.css">
     <link rel="stylesheet" href="Styles/Style.css">
 </head>
 
 <body>
     <div id="navbar"></div>
+
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
 
     <main id="app"></main>
 

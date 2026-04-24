@@ -32,6 +32,7 @@ const Movies = (() => {
     });
 
     await Promise.all(SECTIONS.map((section) => _loadSection(section)));
+    hideLoader();
   }
 
   function _buildSectionSkeleton(section) {
@@ -69,11 +70,11 @@ const Movies = (() => {
     arrowRight.textContent = "›";
 
     arrowLeft.addEventListener("click", () =>
-      row.scrollBy({ left: -320, behavior: "smooth" })
+      row.scrollBy({ left: -320, behavior: "smooth" }),
     );
 
     arrowRight.addEventListener("click", () =>
-      row.scrollBy({ left: 320, behavior: "smooth" })
+      row.scrollBy({ left: 320, behavior: "smooth" }),
     );
 
     scrollWrapper.appendChild(arrowLeft);
@@ -110,9 +111,7 @@ const Movies = (() => {
 
   function _createCard(movie, index) {
     const posterSrc = movie.poster || "assets/no-poster.jpg";
-    const rating = movie.rating
-      ? parseFloat(movie.rating).toFixed(1)
-      : "N/A";
+    const rating = movie.rating ? parseFloat(movie.rating).toFixed(1) : "N/A";
 
     const ratingClass =
       movie.rating >= 7 ? "high" : movie.rating >= 5 ? "mid" : "low";
@@ -189,9 +188,9 @@ const Movies = (() => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "add",
-          tmdb_id: movieData.id, 
+          tmdb_id: movieData.id,
           title: movieData.title,
-          poster_path: movieData.poster, 
+          poster_path: movieData.poster,
           release_date: movieData.release_date || "",
           description: movieData.overview || "",
         }),
@@ -222,4 +221,3 @@ const Movies = (() => {
 function loadMovies() {
   Movies.init();
 }
-

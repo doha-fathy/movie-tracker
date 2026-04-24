@@ -1,5 +1,13 @@
 let isRouting = false;
 
+function showLoader() {
+  document.getElementById("page-loader").classList.remove("hide");
+}
+
+function hideLoader() {
+  document.getElementById("page-loader").classList.add("hide");
+}
+
 async function router() {
   if (isRouting) return;
   isRouting = true;
@@ -172,18 +180,21 @@ function loadLoginPage() {
 }
 
 function loadMoviesPage() {
+  showLoader();
   document.getElementById("app").innerHTML =
     `<div id="movies-content" class = "mt-20"></div>`;
   loadMovies();
 }
 
 function loadUpcomingPage() {
+  showLoader();
   document.getElementById("app").innerHTML =
     `<div id="upcoming-content" class = "mt-20"></div>`;
   loadUpcoming();
 }
 
 function loadWatchlistPage() {
+  showLoader();
   document.getElementById("app").innerHTML =
     `<div id="watchlist-container" class = "mt-20"></div>`;
   loadWatchlist();
@@ -196,6 +207,7 @@ function loadProfilePage() {
 }
 
 function loadDetailsPage(id) {
+  showLoader();
   document.getElementById("app").innerHTML = `<div id="movie-details"></div>`;
   loadMovieDetails(id);
 }
@@ -236,8 +248,9 @@ window.updateUIForAuth = async function () {
 };
 
 function loadVerifyEmailPage() {
-    document.getElementById("app").innerHTML = `<div id="verify-email-container"></div>`;
-    renderVerifyEmailPage("verify-email-container");
+  document.getElementById("app").innerHTML =
+    `<div id="verify-email-container"></div>`;
+  renderVerifyEmailPage("verify-email-container");
 }
 
 router();

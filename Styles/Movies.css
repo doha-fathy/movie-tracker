@@ -5,12 +5,14 @@
     flex-direction: column;
     gap: 40px;
 }
+
 .movies-section,
 .upcoming-month-section {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
+
 .section-title,
 .upcoming-month-label {
     font-size: 1.4rem;
@@ -19,12 +21,14 @@
     margin: 0;
     padding-left: 4px;
 }
+
 .scroll-wrapper {
     display: flex;
     align-items: center;
     gap: 8px;
     position: relative;
 }
+
 .movies-row,
 .upcoming-row {
     display: flex;
@@ -35,29 +39,31 @@
     scroll-behavior: smooth;
     padding: 8px 4px 16px;
     flex: 1;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
+
 .movies-row::-webkit-scrollbar,
 .upcoming-row::-webkit-scrollbar {
     height: 4px;
 }
+
 .movies-row::-webkit-scrollbar-track,
 .upcoming-row::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .movies-row::-webkit-scrollbar-thumb,
 .upcoming-row::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: #e13180a3;
     border-radius: 4px;
 }
+
 .scroll-arrow {
     flex-shrink: 0;
     width: 36px;
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.15);
+    background: #e13180;
     color: #fff;
     font-size: 1.4rem;
     cursor: pointer;
@@ -67,22 +73,26 @@
     transition: background 0.2s;
     line-height: 1;
 }
+
 .scroll-arrow:hover {
     background: rgba(255, 255, 255, 0.3);
 }
-#watchlist-container{
+
+#watchlist-container {
     display: flex;
     gap: 20px;
     width: 95%;
     margin: 50px auto;
     flex-wrap: wrap;
 }
-.movie-title-watchlist{
+
+.movie-title-watchlist {
     padding: 2px;
     font-size: 13px;
     font-weight: bold;
-    
+
 }
+
 .movie-card {
     flex-shrink: 0;
     width: 160px;
@@ -96,7 +106,8 @@
     color: white;
     text-align: center;
 }
-.watchlist-delete-btn{
+
+.watchlist-delete-btn {
     background-color: #be123c;
     margin: 4px auto 14px;
     width: 130px;
@@ -106,28 +117,33 @@
     border: 1px solid transparent;
 
 }
-.watchlist-delete-btn:hover{
+
+.watchlist-delete-btn:hover {
     background-color: transparent;
     border: 1px solid #be123c;
     color: #be123c;
 }
+
 .movie-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 0 28px #be123c;
 
 }
+
 .card-poster {
     position: relative;
     width: 100%;
     aspect-ratio: 2/3;
     overflow: hidden;
 }
+
 .card-poster img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
+
 .card-rating {
     position: absolute;
     top: 6px;
@@ -139,9 +155,19 @@
     background: rgba(0, 0, 0, 0.7);
     color: #fff;
 }
-.card-rating.high { color: #4ade80; }
-.card-rating.mid  { color: #facc15; }
-.card-rating.low  { color: #f87171; }
+
+.card-rating.high {
+    color: #4ade80;
+}
+
+.card-rating.mid {
+    color: #facc15;
+}
+
+.card-rating.low {
+    color: #f87171;
+}
+
 .card-info {
     padding: 8px;
     display: flex;
@@ -149,6 +175,7 @@
     gap: 6px;
     flex: 1;
 }
+
 .card-title {
     margin: 0;
     font-size: 0.78rem;
@@ -160,6 +187,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
 .btn-add-watchlist {
     margin-top: auto;
     padding: 5px 8px;
@@ -173,20 +201,25 @@
     transition: background 0.2s, opacity 0.2s;
     white-space: nowrap;
 }
+
 .btn-add-watchlist:hover:not(:disabled) {
     background: #be123c;
 }
+
 .btn-add-watchlist.btn-added {
     background: #16a34a;
     cursor: default;
 }
+
 .btn-add-watchlist.btn-error {
     background: #dc2626;
 }
+
 .btn-add-watchlist:disabled {
     opacity: 0.7;
     cursor: not-allowed;
 }
+
 .upcoming-card {
     flex-shrink: 0;
     width: 160px;
@@ -198,46 +231,53 @@
     display: flex;
     flex-direction: column;
 }
+
 .upcoming-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 28px #be123c;
 }
+
 .upcoming-poster {
     position: relative;
     width: 100%;
     aspect-ratio: 2/3;
     overflow: hidden;
 }
+
 .upcoming-poster img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
+
 .upcoming-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
     padding: 8px;
     display: flex;
     justify-content: center;
 }
+
 .upcoming-date-badge {
     font-size: 0.65rem;
     font-weight: 700;
     color: #facc15;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     padding: 2px 6px;
     border-radius: 4px;
 }
+
 .upcoming-info {
     padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
+
 .upcoming-title {
     margin: 0;
     font-size: 0.78rem;
@@ -249,17 +289,20 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
 .upcoming-date {
     margin: 0;
     font-size: 0.68rem;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255, 255, 255, 0.5);
 }
+
 .row-loading,
 .upcoming-loading {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.9rem;
     padding: 8px 4px;
 }
+
 .row-error,
 .upcoming-error {
     color: #f87171;

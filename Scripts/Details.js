@@ -71,6 +71,7 @@ async function loadMovieDetails(movieId) {
   const recommendations = await ApiOps.getRecommendations(movieId);
   const similarMovies = await ApiOps.getSimilarMovies(movieId);
 
+  hideLoader();
   const detailsContent = document.getElementById("movie-details");
 
   if (!movie) return;
@@ -85,7 +86,7 @@ async function loadMovieDetails(movieId) {
           content: r.comment,
           createdAt: r.created_at,
         }));
-        reviews = [...dbReviews, ...movieDetails.reviews]; 
+        reviews = [...dbReviews, ...movieDetails.reviews];
       }
     } catch (e) {
       console.error("Failed to load DB reviews", e);

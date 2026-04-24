@@ -12,6 +12,7 @@ const Upcoming = (() => {
     page.appendChild(loading);
     const movies = await ApiOps.getUpcomingMovies();
     loading.remove();
+    hideLoader();
     if (!movies || movies.length === 0) {
       const err = document.createElement("div");
       err.className = "upcoming-error";
