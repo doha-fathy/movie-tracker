@@ -11,9 +11,9 @@ ini_set('session.cookie_samesite', 'Strict');
 
 
 ////////// ONLY FOR TESTING \\\\\\\\\\\\\\\
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 ///////////////////////////////////////////
 
 session_start();
@@ -276,7 +276,7 @@ function changePass(){
         respond(false, null, "New password must be different");
     }
 
-    $result = $userOps->changePassword($id, $oldPassword, $newPassword);
+    $result = $userOps->changePassword($id, $newPassword);
 
     if (isset($result["error"])) {
         respond(false, null, $result["error"]);
@@ -440,38 +440,75 @@ use PHPMailer\PHPMailer\Exception;
 
 
 
-function sendEmail($to, $subject, $body)
-{
-    global $env;
+// function sendEmail($to, $subject, $body)
+// {
+//     global $env;
 
+//     $mail = new PHPMailer(true);
+
+//     try {
+//         // Server Settings
+//         $mail->isSMTP();
+//         $mail->Host       = 'smtp.gmail.com';
+//         $mail->SMTPAuth   = true;
+//         $mail->Username   = $env['SMTP_USER']; 
+//         $mail->Password   = $env['SMTP_PASS']; 
+//         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+//         $mail->Port       = 587;
+//         $mail->CharSet    = 'UTF-8';
+
+//         // Recipients
+//         $mail->setFrom($env['SMTP_USER'], 'Movie Tracker');
+//         $mail->addAddress($to);
+
+//         // Content
+//         $mail->isHTML(true);
+//         $mail->Subject = $subject;
+//         $mail->Body    = $body;
+//         // AltBody is good for users with HTML emails turned off
+//         $mail->AltBody = strip_tags($body); 
+
+//         return $mail->send();
+
+//     } catch (Exception $e) {
+//         error_log("Mailer Error: {$mail->ErrorInfo}");
+//         return false;
+//     }
+// }
+
+
+function sendEmail($to, $subject, $body) {
+    global $env; // Assuming your Gmail credentials are in your $env array
+    
     $mail = new PHPMailer(true);
 
     try {
-        // Server Settings
+        // --- 1. Attempt SMTP (Gmail) ---
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = $env['SMTP_USER']; 
-        $mail->Password   = $env['SMTP_PASS']; 
+        $mail->Username   = $env['SMTP_USER']; // Your Gmail
+        $mail->Password   = $env['SMTP_PASS']; // Your App Password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
-        $mail->CharSet    = 'UTF-8';
+        $mail->Timeout    = 5; // Low timeout so it fails fast if blocked
 
-        // Recipients
         $mail->setFrom($env['SMTP_USER'], 'Movie Tracker');
         $mail->addAddress($to);
-
-        // Content
         $mail->isHTML(true);
         $mail->Subject = $subject;
         $mail->Body    = $body;
-        // AltBody is good for users with HTML emails turned off
-        $mail->AltBody = strip_tags($body); 
 
-        return $mail->send();
+        $mail->send();
+        return true;
 
     } catch (Exception $e) {
-        error_log("Mailer Error: {$mail->ErrorInfo}");
-        return false;
+        // --- 2. Fallback to Native PHP Mail ---
+        // This runs if InfinityFree blocks Port 587
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        $headers .= "From: <" . $env['SMTP_USER'] . ">" . "\r\n";
+
+        return mail($to, $subject, $body, $headers);
     }
 }
