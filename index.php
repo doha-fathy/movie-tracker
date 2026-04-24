@@ -28,6 +28,7 @@ require_once 'header.php';
     <script src="Scripts/Upcoming.js"></script>
     <script src="Scripts/WatchingList.js"></script>
     <script src="Scripts/Profile.js"></script>
+    <script src="Scripts/Verify_Email.js"></script>
     <script src="Scripts/App.js"></script>
 </body>
 

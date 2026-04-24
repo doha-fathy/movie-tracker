@@ -128,7 +128,7 @@ function register(){
     $token = $tokenRes['token'];
 
     $baseUrl = $env['APP_URL'];
-    $verifyLink = $baseUrl . "/auth.php?action=verify_email&token=$token";
+    $verifyLink = $baseUrl ."/?page=verify_email&token=$token";
 
     $body = "
     <h2>Verify your email</h2>
