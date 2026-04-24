@@ -34,8 +34,6 @@ if (!$userResponse['success'] || empty($userResponse['data']['is_verified'])) {
 
 $watchlist = new WatchlistOps();
 
-
-
 try {
 
     //----------------------- GET → Fetch user watchlist ---------------------------
@@ -118,7 +116,7 @@ try {
             respond(true, $result['message'], null);
         }
     }
-
+    
     //------------------------ Method not allowed ---------------------------------
     respond(false, "Method not allowed", null, 405);
 } catch (Throwable $e) {
