@@ -171,6 +171,7 @@ async function loadMovieDetails(movieId) {
                   <i class="fa-solid fa-heart"></i>
                   </div>
                   <div
+                  id="watchlistBtn"
                   class="bg-[#C1246B] h-10 w-10 rounded-full flex justify-center items-center hover:cursor-pointer hover:text-[#C1246B] hover:bg-white transition-all duration-300"
                   title="Add to Watch List"
                   >
@@ -296,6 +297,50 @@ async function loadMovieDetails(movieId) {
         </div>
       </div>
                   `;
+
+
+  const watchlistBtn = document.getElementById("watchlistBtn");
+
+  watchlistBtn.addEventListener("click", async () => {
+    // UI Feedback: Change icon to a spinner or change color to show loading
+    const icon = watchlistBtn.querySelector("i");
+    const originalClass = icon.className;
+    icon.className = "fa-solid fa-spinner fa-spin"; // Simple loading state
+
+    try {
+      const response = await fetch("watchlist_api.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "add",
+          tmdb_id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster,
+          release_date: movie.release_date || "",
+          description: movie.overview || "",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Success state: change background or icon
+        watchlistBtn.classList.remove("bg-[#C1246B]");
+        watchlistBtn.classList.add("bg-green-600");
+        icon.className = "fa-solid fa-check";
+        watchlistBtn.title = "Added to Watchlist";
+      } else {
+        // Handle failure (e.g., user not logged in)
+        alert(result.message || "Failed to add to watchlist");
+        icon.className = originalClass;
+      }
+    } catch (err) {
+      console.error("Watchlist Error:", err);
+      alert("Network error. Please try again.");
+      icon.className = originalClass;
+    }
+  });
+
 
   const genresDiv = document.getElementById("genres");
   const actorsDiv = document.getElementById("actorsDiv");
