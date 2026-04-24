@@ -200,7 +200,7 @@ const Movies = (() => {
       console.log("Watchlist Response:", result);
 
       if (!result.success) {
-        btn.textContent = "✗ Error";
+        btn.textContent = "✗ Not Added";
         btn.classList.add("btn-error");
         btn.disabled = false;
       } else {
@@ -209,7 +209,7 @@ const Movies = (() => {
       }
     } catch (err) {
       console.error("Watchlist Error:", err);
-      btn.textContent = "✗ Failed";
+      btn.textContent = "✗ Not Added";
       btn.classList.add("btn-error");
       btn.disabled = false;
     }
