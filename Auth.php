@@ -195,14 +195,29 @@ function logout(){
 }
 
 
-function check(){
+function check()
+{
+    global $userOps;
 
     if (!isset($_SESSION['user_id'])) {
         respond(true, ["authenticated" => false]);
     }
 
+    $response = $userOps->getUserById($_SESSION['user_id']);
+
+    if (!$response['success']) {
+        respond(true, ["authenticated" => false]);
+    }
+
+    $user = $response['data'];
+
     respond(true, [
         "authenticated" => true,
+        "user" => [
+            "id"       => $user['id'],
+            "username" => $user['username'],
+            "photo"    => $user['photo']
+        ]
     ]);
 }
 

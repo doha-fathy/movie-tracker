@@ -20,7 +20,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         respond(["success" => false, "message" => "movie_id required"]);
     }
 
-    $movieId = $_GET['movie_id'];
+    $tmdbId = $_GET['movie_id'];
+
+    $db = new Database();
+    $conn = $db->getConnection();
+    $stmt = $conn->prepare("SELECT id FROM movies WHERE tmdb_id = :tmdb_id");
+    $stmt->execute(["tmdb_id" => $tmdbId]);
+    $movie = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$movie) {
+        respond(["success" => true, "data" => ["reviews" => []]]);
+    }
+
+    $movieId = $movie['id'];
 
     $allReviewsRes = $reviewOps->getMovieReviews($movieId);
 
@@ -28,30 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         respond($allReviewsRes);
     }
 
-    $reviews = $allReviewsRes['data'];
-    $myReview = null;
-
-    if ($userId) {
-        $myReviewRes = $reviewOps->getUserReview($userId, $movieId);
-
-        if ($myReviewRes['success'] && $myReviewRes['data']) {
-            $myReview = $myReviewRes['data'];
-
-            $reviews = array_values(array_filter($reviews, function ($r) use ($userId) {
-                return $r['user_id'] != $userId;
-            }));
-        }
-    }
-
     respond([
         "success" => true,
         "data" => [
-            "my_review" => $myReview,
-            "reviews" => $reviews
+            "reviews" => $allReviewsRes['data']
         ]
     ]);
 }
-
 
 // ---------------- POST ----------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -67,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $movieData = $data['movie'] ?? null;
-    $rating    = $data['rating'] ?? null;
+    $rating    = $data['rating'] ?? 6;
     $comment   = $data['comment'] ?? '';
 
     $response = $reviewOps->addOrUpdateReview($userId, $movieData, $rating, $comment);

@@ -60,12 +60,13 @@ function createMovieCard(movie, index = 0) {
 
   return card;
 }
+
 // const movieId = 550;
 async function loadMovieDetails(movieId) {
   const movieDetails = await ApiOps.getMovieDetails(movieId);
   const movie = movieDetails.movie;
   const cast = movieDetails.cast;
-  const reviews = movieDetails.reviews;
+  let reviews = movieDetails.reviews;
   const videos = movieDetails.videos;
   const recommendations = await ApiOps.getRecommendations(movieId);
   const similarMovies = await ApiOps.getSimilarMovies(movieId);
@@ -73,6 +74,25 @@ async function loadMovieDetails(movieId) {
   const detailsContent = document.getElementById("movie-details");
 
   if (!movie) return;
+
+  async function loadDBReviews() {
+    try {
+      const res = await fetch(`reviews_api.php?movie_id=${movieId}`);
+      const dbData = await res.json();
+      if (dbData.success) {
+        const dbReviews = dbData.data.reviews.map((r) => ({
+          username: r.username,
+          content: r.comment,
+          createdAt: r.created_at,
+        }));
+        reviews = [...dbReviews, ...movieDetails.reviews]; 
+      }
+    } catch (e) {
+      console.error("Failed to load DB reviews", e);
+    }
+  }
+
+  await loadDBReviews();
 
   // helpers
   function formatRuntime(minutes) {
@@ -95,7 +115,6 @@ async function loadMovieDetails(movieId) {
 
   const duration = formatRuntime(movie.runtime);
   const rating = formatRating(movie.rating);
-
 
   detailsContent.innerHTML = `
                      <div
@@ -315,11 +334,11 @@ async function loadMovieDetails(movieId) {
                     </div>`;
   });
 
-similarMovies.forEach((m, i) => {
+  similarMovies.forEach((m, i) => {
     similarDiv.appendChild(createMovieCard(m, i));
   });
 
- recommendations.forEach((m, i) => {
+  recommendations.forEach((m, i) => {
     recommendationsDiv.appendChild(createMovieCard(m, i));
   });
 
@@ -329,7 +348,6 @@ similarMovies.forEach((m, i) => {
       navigateTo("details", movieId);
     });
   });
-
 
   const reviewsContainer = document.getElementById("reviewsContainer");
   const showMoreBtn = document.getElementById("showMoreBtn");
@@ -389,6 +407,51 @@ similarMovies.forEach((m, i) => {
   });
 
   renderReviews();
+
+  //==================================================================
+
+  const reviewForm = document.getElementById("reviewForm");
+  const reviewInput = document.getElementById("reviewInput");
+
+  reviewForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const content = reviewInput.value.trim();
+    if (!content) return;
+
+    const authStatus = await checkAuthStatus();
+    if (!authStatus.authenticated) {
+      navigateTo("login");
+      return;
+    }
+
+    const username = authStatus.user.username;
+    const createdAt = new Date().toISOString().split("T")[0];
+
+    try {
+      const response = await fetch("reviews_api.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          movie: { tmdb_id: movieId },
+          rating: 6,
+          comment: content,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        await loadDBReviews();
+        reviewInput.value = "";
+        renderReviews();
+      } else {
+        alert(data.message || "Failed to submit review.");
+      }
+    } catch (err) {
+      alert("Network error. Please try again.");
+    }
+  });
 
   const tabs = document.querySelectorAll(".tab-btn");
   const contents = document.querySelectorAll(".tab-content");
