@@ -20,7 +20,7 @@ require_once 'header.php';
 <body>
     <div id="navbar"></div>
 
-    <div id="page-loader">
+    <div id="page-loader" class="hide">
         <div class="loader-spinner"></div>
     </div>
 
