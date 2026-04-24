@@ -1,7 +1,7 @@
 <?php
 
 require_once "DB_Ops.php";
-require_once 'vendor/autoload.php';
+// require_once 'vendor/autoload.php';
 
 $env = parse_ini_file(__DIR__ . '/.env');
 
@@ -435,8 +435,8 @@ function verifyEmail() {
 
 
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+// use PHPMailer\PHPMailer\PHPMailer;
+// use PHPMailer\PHPMailer\Exception;
 
 
 
