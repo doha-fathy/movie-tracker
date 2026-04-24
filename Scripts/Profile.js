@@ -118,76 +118,96 @@ function renderProfilePage(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
     
-    container.innerHTML = `
-        <div class="flex justify-center items-center min-h-screen">
-        <div class="max-w-2xl w-full p-6 rounded-lg mt-12 bg-[#F8D7E3] shadow-[0_0_10px_#E13661]">
-            <h1 class="text-3xl font-bold mb-6 text-center text-[#C1246B]">My Profile</h1>
-            
-            <!-- Profile Info Section -->
-            <div class="mb-8">
-                <div class="flex items-center mb-6 justify-center">
-                    <div class="text-center">
-                        <img id="profile-photo" src="https://via.placeholder.com/100" alt="Profile Photo" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-[#C1246B]">
-                        <h2 id="profile-name" class="text-2xl font-bold text-[#C1246B]"></h2>
-                        <p id="profile-email" class="text-[#C1246B]"></p>
-                    </div>
+container.innerHTML = `
+    <div class="flex justify-center items-center min-h-screen px-4 py-12">
+        <div class="max-w-2xl w-full rounded-2xl overflow-hidden border border-white/10 profile-card">
+            <div class="relative h-28 bg-[#1a0a12]">
+                <div class="absolute inset-0 auth-banner-glow"></div>
+                <div class="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                    <img id="profile-photo" src="Images/acotrPlaceholder.jpg" alt="Profile Photo"
+                         class="w-24 h-24 rounded-full object-cover border-[3px] border-[#C1246B] profile-avatar">
                 </div>
             </div>
-            
-            <!-- Edit Profile Form -->
-            <div class="mb-8 border-t-2 border-[#C1246B] pt-6">
-                <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Edit Profile</h3>
-                <form id="edit-profile-form" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+
+            <div class="text-center mt-14 mb-6 px-6">
+                <h2 id="profile-name" class="text-2xl font-bold text-white mb-1"></h2>
+                <p id="profile-email" class="text-sm text-white/40"></p>
+            </div>
+
+            <div class="px-8 pb-10 space-y-8">
+
+                <div class="rounded-xl p-6 border border-white/[0.07] profile-section">
+                    <h3 class="text-lg font-bold mb-5 flex items-center gap-2 text-[#C1246B]">
+                        <i class="fa-solid fa-pen-to-square text-sm"></i> Edit Profile
+                    </h3>
+                    <form id="edit-profile-form" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold mb-2 tracking-wider text-white/40">First Name</label>
+                                <input type="text" id="first-name" name="first_name" required
+                                       class="w-full px-4 py-2.5 rounded-lg text-sm transition-all duration-200 profile-input">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-2 tracking-wider text-white/40">Last Name</label>
+                                <input type="text" id="last-name" name="last_name" required
+                                       class="w-full px-4 py-2.5 rounded-lg text-sm transition-all duration-200 profile-input">
+                            </div>
+                        </div>
+                        <div id="edit-error" class="text-red-400 text-sm font-semibold hidden"></div>
+                        <button type="submit"
+                                class="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-200 border-2 border-transparent bg-[#C1246B] hover:bg-transparent hover:border-[#C1246B]">
+                            Update Profile
+                        </button>
+                    </form>
+                </div>
+
+                <div class="rounded-xl p-6 border border-white/[0.07] profile-section">
+                    <h3 class="text-lg font-bold mb-5 flex items-center gap-2 text-[#C1246B]">
+                        <i class="fa-solid fa-camera text-sm"></i> Change Profile Photo
+                    </h3>
+                    <form id="upload-photo-form" class="space-y-4">
+                        <input type="file" id="photo-input" name="photo" accept="image/*"
+                               class="w-full px-4 py-2.5 rounded-lg text-sm cursor-pointer text-white/50 profile-input">
+                        <div id="upload-error" class="text-red-400 text-sm font-semibold hidden"></div>
+                        <button type="submit"
+                                class="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-200 border-2 border-transparent bg-[#C1246B] hover:bg-transparent hover:border-[#C1246B]">
+                            Upload Photo
+                        </button>
+                    </form>
+                </div>
+
+                <div class="rounded-xl p-6 border border-white/[0.07] profile-section">
+                    <h3 class="text-lg font-bold mb-5 flex items-center gap-2 text-[#C1246B]">
+                        <i class="fa-solid fa-lock text-sm"></i> Change Password
+                    </h3>
+                    <form id="change-password-form" class="space-y-4">
                         <div>
-                            <label class="block text-[#C1246B] font-semibold mb-2">First Name</label>
-                            <input type="text" id="first-name" name="first_name" required class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
+                            <label class="block text-xs font-semibold mb-2 tracking-wider text-white/40">Current Password</label>
+                            <input type="password" id="current-password" name="current_password" required
+                                   class="w-full px-4 py-2.5 rounded-lg text-sm profile-input">
                         </div>
                         <div>
-                            <label class="block text-[#C1246B] font-semibold mb-2">Last Name</label>
-                            <input type="text" id="last-name" name="last_name" required class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
+                            <label class="block text-xs font-semibold mb-2 tracking-wider text-white/40">New Password</label>
+                            <input type="password" id="new-password" name="new_password" required minlength="6"
+                                   class="w-full px-4 py-2.5 rounded-lg text-sm profile-input">
                         </div>
-                    </div>
-                    <div id="edit-error" class="text-red-600 text-sm font-semibold hidden"></div>
-                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B]/50 border border-transparent transition-all duration-300 font-semibold">Update Profile</button>
-                </form>
+                        <div>
+                            <label class="block text-xs font-semibold mb-2 tracking-wider text-white/40">Confirm Password</label>
+                            <input type="password" id="confirm-password" name="confirm_password" required minlength="6"
+                                   class="w-full px-4 py-2.5 rounded-lg text-sm profile-input">
+                        </div>
+                        <div id="password-error" class="text-red-400 text-sm font-semibold hidden"></div>
+                        <button type="submit"
+                                class="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-200 border-2 border-transparent bg-[#C1246B] hover:bg-transparent hover:border-[#C1246B]">
+                            Change Password
+                        </button>
+                    </form>
+                </div>
+
             </div>
-            
-            <!-- Upload Photo Section -->
-            <div class="mb-8 border-t-2 border-[#C1246B] pt-6">
-                <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Change Profile Photo</h3>
-                <form id="upload-photo-form" class="space-y-4">
-                    <div>
-                        <input type="file" id="photo-input" name="photo" accept="image/*" class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg">
-                    </div>
-                    <div id="upload-error" class="text-red-600 text-sm font-semibold hidden"></div>
-                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border border-transparent transition-all duration-300 font-semibold">Upload Photo</button>
-                </form>
-            </div>
-            
-            <!-- Change Password Section -->
-            <div class="mb-8 border-t-2/50 pt-6">
-                <h3 class="text-xl font-bold mb-4 text-[#C1246B]">Change Password</h3>
-                <form id="change-password-form" class="space-y-4">
-                    <div>
-                        <label class="block text-[#C1246B] font-semibold mb-2">Current Password</label>
-                        <input type="password" id="current-password" name="current_password" required class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
-                    </div>
-                    <div>
-                        <label class="block text-[#C1246B] font-semibold mb-2">New Password</label>
-                        <input type="password" id="new-password" name="new_password" required minlength="6" class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
-                    </div>
-                    <div>
-                        <label class="block text-[#C1246B] font-semibold mb-2">Confirm Password</label>
-                        <input type="password" id="confirm-password" name="confirm_password" required minlength="6" class="w-full px-3 py-2 border border-[#C1246B]/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C1246B] focus:shadow-[0_0_10px_#E13661]">
-                    </div>
-                    <div id="password-error" class="text-red-600 text-sm font-semibold hidden"></div>
-                    <button type="submit" class="w-full bg-[#C1246B] text-white py-2 rounded-lg hover:text-[#E13661] hover:bg-[#F8D7E3] hover:border-[#C1246B] border-2 border-transparent transition-all duration-300 font-semibold">Change Password</button>
-                </form>
-            </div>
-        </div></div>
-    `;
-    
+        </div>
+    </div>
+`;
     // Load profile data
     loadProfileData();
     

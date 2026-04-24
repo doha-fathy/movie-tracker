@@ -306,3 +306,71 @@ body {
   justify-content: center;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
+
+
+
+/* Auth Custom Classes               */
+.auth-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 0 40px rgba(193,36,107,0.4);
+}
+
+.auth-banner {
+    background: linear-gradient(135deg, #1a0a12 0%, #3a0d24 50%, #1a0a12 100%);
+}
+
+.auth-banner-glow {
+    background: radial-gradient(ellipse at center, rgba(193,36,107,0.3) 0%, transparent 70%);
+}
+
+.auth-label {
+    color: rgba(255,255,255,0.4);
+}
+
+.auth-input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    outline: none;
+}
+
+.auth-input:focus {
+    border-color: #C1246B;
+    box-shadow: 0 0 12px rgba(193,36,107,0.3);
+}
+
+.auth-footer-text {
+    color: rgba(255,255,255,0.4);
+}
+
+.auth-footer-link {
+    color: #C1246B;
+}
+
+
+/* Profile Custom Classes                                 */
+.profile-card {
+    background: rgba(255,255,255,0.04);
+    box-shadow: 0 0 40px rgba(193,36,107,0.4);
+}
+
+.profile-avatar {
+    box-shadow: 0 0 20px rgba(193,36,107,0.5);
+}
+
+.profile-section {
+    background: rgba(255,255,255,0.03);
+}
+
+.profile-input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    outline: none;
+}
+
+.profile-input:focus {
+    border-color: #C1246B;
+    box-shadow: 0 0 12px rgba(193,36,107,0.3);
+}

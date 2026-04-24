@@ -70,6 +70,19 @@
 .scroll-arrow:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+#watchlist-container{
+    display: flex;
+    gap: 20px;
+    width: 95%;
+    margin: 50px auto;
+    flex-wrap: wrap;
+}
+.movie-title-watchlist{
+    padding: 2px;
+    font-size: 13px;
+    font-weight: bold;
+    
+}
 .movie-card {
     flex-shrink: 0;
     width: 160px;
@@ -80,10 +93,28 @@
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    color: white;
+    text-align: center;
+}
+.watchlist-delete-btn{
+    background-color: #be123c;
+    margin: 4px auto 14px;
+    width: 130px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease-in;
+    border: 1px solid transparent;
+
+}
+.watchlist-delete-btn:hover{
+    background-color: transparent;
+    border: 1px solid #be123c;
+    color: #be123c;
 }
 .movie-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 28px #be123c;
+
 }
 .card-poster {
     position: relative;

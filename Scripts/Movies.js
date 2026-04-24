@@ -191,7 +191,7 @@ const Movies = (() => {
           action: "add",
           tmdb_id: movieData.id, 
           title: movieData.title,
-          poster_path: movieData.poster, // تأكدي إن ده صح
+          poster_path: movieData.poster, 
           release_date: movieData.release_date || "",
           description: movieData.overview || "",
         }),
