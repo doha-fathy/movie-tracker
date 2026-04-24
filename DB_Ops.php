@@ -140,8 +140,7 @@ class WatchlistOps
     {
         $userId = filter_var($userId, FILTER_VALIDATE_INT);
 
-        // data-id → tmdb_id
-        $tmdb_id = $movieData['data-id'] ?? null;
+        $tmdb_id = $movieData['tmdb_id'] ?? null;
 
         if (!$userId || !$tmdb_id) {
             return $this->error("Invalid request. Please try again.");
@@ -516,7 +515,7 @@ class UserOps
         }
     }
 
-    
+
     //-----------------------------------------------------------------------------------------------
 
     public function setVerifiedStatus($id, $status)
@@ -553,7 +552,6 @@ class UserOps
             ]);
 
             return $this->success(null, "Password updated successfully.");
-
         } catch (PDOException $e) {
             return $this->error("Database error.");
         }
@@ -805,7 +803,6 @@ class TokenOps
                 "success" => true,
                 "token" => $token
             ];
-
         } catch (PDOException $e) {
             return [
                 "success" => false,
@@ -843,7 +840,6 @@ class TokenOps
                 "success" => true,
                 "data" => $record
             ];
-
         } catch (PDOException $e) {
             return [
                 "success" => false,
@@ -862,7 +858,6 @@ class TokenOps
             $stmt->execute(["id" => $tokenId]);
 
             return ["success" => true];
-
         } catch (PDOException $e) {
             return [
                 "success" => false,
