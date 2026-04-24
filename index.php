@@ -24,7 +24,7 @@ require_once 'header.php';
         <div class="loader-spinner"></div>
     </div>
 
-    <main id="app"></main>
+    <main id="app" class="min-h-[60vh]"></main>
 
     <script src="Scripts/API_Ops.js"></script>
     <script src="Scripts/Auth.js"></script>
