@@ -129,7 +129,7 @@ function register(){
     $token = $tokenRes['token'];
 
     $baseUrl = $env['APP_URL'];
-    $verifyLink = $baseUrl ."/?page=verify_email&token=$token";
+    $verifyLink = $baseUrl . "/Auth.php?action=verify_email&token=$token";
 
     $body = "
     <h2>Verify your email</h2>
@@ -411,27 +411,55 @@ function forgotPassword() {
 }
 
 
+// function verifyEmail() {
+
+//     global $tokenOps, $userOps;
+
+//     $token = $_GET['token'] ?? '';
+
+//     if (!$token) respond(false, null, "Invalid token");
+
+//     $result = $tokenOps->validateToken($token, 'verify_email');
+
+//     if (!$result['success']) {
+//         respond(false, null, $result['message']);
+//     }
+
+//     $data = $result['data'];
+
+//     $userOps->setVerifiedStatus($data['user_id'], 1);
+
+//     $tokenOps->markTokenUsed($data['id']);
+
+//     respond(true, null, "Email verified");
+// }
+
+
 function verifyEmail() {
 
-    global $tokenOps, $userOps;
+    global $tokenOps, $userOps, $env;
 
     $token = $_GET['token'] ?? '';
 
-    if (!$token) respond(false, null, "Invalid token");
+    if (!$token) {
+        header("Location: {$env['APP_URL']}/?page=verify_email&status=error");
+        exit;
+    }
 
     $result = $tokenOps->validateToken($token, 'verify_email');
 
     if (!$result['success']) {
-        respond(false, null, $result['message']);
+        header("Location: {$env['APP_URL']}/?page=verify_email&status=error");
+        exit;
     }
 
     $data = $result['data'];
 
     $userOps->setVerifiedStatus($data['user_id'], 1);
-
     $tokenOps->markTokenUsed($data['id']);
 
-    respond(true, null, "Email verified");
+    header("Location: {$env['APP_URL']}?page=verify_email&status=success");
+    exit;
 }
 
 
