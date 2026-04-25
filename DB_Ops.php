@@ -244,7 +244,7 @@ class UserOps
         return htmlspecialchars($data);
     }
 
-    public function createUser($first, $last, $username, $email, $password, $photo = "uploads/default.png")
+    public function createUser($first, $last, $username, $email, $password, $photo = "Uploads/default.png")
     {
         if (empty($username) || empty($email) || empty($password)) {
             return $this->error("All required fields must be filled.");
