@@ -3,7 +3,7 @@
 ob_start();
 
 require_once "DB_Ops.php";
-require_once 'vendor/autoload.php';
+// require_once 'vendor/autoload.php';
 
 ini_set('session.use_strict_mode', 1);
 ini_set('session.cookie_httponly', 1);

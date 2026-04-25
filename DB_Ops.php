@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('UTC');
+
 class Database
 {
     private $connection;
@@ -17,6 +19,10 @@ class Database
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
                 ]
             );
+
+            // This forces the MySQL session to UTC to match your PHP settings
+            $this->connection->exec("SET time_zone = '+00:00'");
+
         } catch (PDOException $e) {
             // die("Database connection failed");
 
@@ -758,18 +764,17 @@ class TokenOps
 
             // create new token
             $token = bin2hex(random_bytes(32));
-            $expires = date("Y-m-d H:i:s", time() + 3600);
+            // $expires = gmdate("Y-m-d H:i:s", time() + 3600);
 
             $stmt = $this->connection->prepare(
                 "INSERT INTO user_tokens (user_id, token, type, expires_at)
-                 VALUES (:user_id, :token, :type, :expires)"
+                 VALUES (:user_id, :token, :type, UTC_TIMESTAMP() + INTERVAL 1 HOUR)"
             );
 
             $stmt->execute([
                 "user_id" => $userId,
                 "token" => $token,
-                "type" => $type,
-                "expires" => $expires
+                "type" => $type
             ]);
 
             return [
@@ -791,7 +796,8 @@ class TokenOps
                 "SELECT * FROM user_tokens
                  WHERE token = :token 
                  AND type = :type 
-                 AND used = 0"
+                 AND used = 0
+                 AND expires_at > UTC_TIMESTAMP()"
             );
 
             $stmt->execute([
@@ -805,9 +811,15 @@ class TokenOps
                 return ["success" => false, "message" => "Invalid token"];
             }
 
-            if (strtotime($record['expires_at']) < time()) {
-                return ["success" => false, "message" => "Token expired"];
-            }
+            // $currentTime = time();
+            // $expirationTime = strtotime($record['expires_at'] . ' UTC'); // Force interpretation as UTC
+
+            // if ($expirationTime < $currentTime) {
+            //     return [
+            //         "success" => false, 
+            //         "message" => "Token expired. System UTC: " . gmdate("H:i", $currentTime) . " Token Exp: " . gmdate("H:i", $expirationTime)
+            //     ];
+            // }
 
             return [
                 "success" => true,

@@ -24,7 +24,7 @@ async function renderVerifyEmailPage(containerId) {
 
   try {
     const res = await fetch(
-      `auth.php?action=verify_email&token=${encodeURIComponent(token)}`,
+      `Auth.php?action=verify_email&token=${encodeURIComponent(token)}`,
     );
     const data = await res.json();
 
