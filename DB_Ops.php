@@ -816,6 +816,35 @@ class ReviewsOps
             return $this->error("Unable to load reviews. Please try again later.");
         }
     }
+
+    // -------------------------------------------------------------------------
+    public function getLocal($movieId){
+        $movieId = filter_var($movieId, FILTER_VALIDATE_INT);
+
+        if ($movieId === false) {
+            return $this->error("Invalid movie. Please try again.");
+        }
+
+        try {
+            $stmt = $this->connection->prepare(
+                "SELECT local_rating_count, local_rating_avg
+                FROM movies
+                WHERE id = :movie_id"
+            );
+
+            $stmt->execute(["movie_id" => $movieId]);
+
+            $locals = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($locals === false) {
+                return $this->success([], "Movie not found.");
+            }
+
+            return $this->success($locals, "Reviews loaded successfully.");
+        } catch (PDOException $e) {
+            return $this->error("Unable to load reviews. Please try again later.");
+        }
+    }
 }
 
 
