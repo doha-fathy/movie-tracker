@@ -13,6 +13,21 @@ function respond($data)
     exit;
 }
 
+
+//------------------------ Check if user is verified -----------------------------
+
+function requireVerification(){
+    global $userOps;
+    global $userId;    
+
+    $userResponse = $userOps->getUserById($userId);
+
+    if (!$userResponse['success'] || empty($userResponse['data']['is_verified'])) {
+        respond(["success" => false, "message" => "Please, verify your email first"]);
+    }
+}
+
+
 // ---------------- GET ----------------
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
@@ -55,6 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         respond(["success" => false, "message" => "Login required"]);
     }
 
+    requireVerification();
+
     $data = json_decode(file_get_contents("php://input"), true);
 
     if (!$data) {
@@ -77,6 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     if (!$userId) {
         respond(["success" => false, "message" => "Login required"]);
     }
+
+    requireVerification();
 
     $data = json_decode(file_get_contents("php://input"), true);
 
