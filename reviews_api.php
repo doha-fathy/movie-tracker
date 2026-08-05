@@ -4,6 +4,7 @@ require_once "DB_Ops.php";
 header('Content-Type: application/json');
 session_start();
 
+$userOps = new UserOps();
 $reviewOps = new ReviewsOps();
 $userId = $_SESSION['user_id'] ?? null;
 
@@ -49,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $movieId = $movie['id'];
 
-if (isset($_GET['mine']) && $_GET['mine'] === 'true') {
+    if (isset($_GET['mine']) && $_GET['mine'] === 'true') {
         if (!$userId) {
             respond([
                 "success" => false,
@@ -83,18 +84,20 @@ if (isset($_GET['mine']) && $_GET['mine'] === 'true') {
             ]
         ]);
     } else {
-    $allReviewsRes = $reviewOps->getMovieReviews($movieId);
+        $allReviewsRes = $reviewOps->getMovieReviews($movieId);
 
-    if (!$allReviewsRes['success']) {
-        respond($allReviewsRes);
+        if (!$allReviewsRes['success']) {
+            respond($allReviewsRes);
+        }
+
+        respond([
+            "success" => true,
+            "data" => [
+                "reviews" => $allReviewsRes['data']
+            ]
+        ]);
     }
 
-    respond([
-        "success" => true,
-        "data" => [
-            "reviews" => $allReviewsRes['data']
-        ]
-    ]);
 }
 
 // ---------------- POST ----------------
@@ -113,10 +116,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $movieData = $data['movie'] ?? null;
-    $rating    = $data['rating'] ?? 6;
-    $comment   = $data['comment'] ?? '';
+    $rating    = $data['rating'] ?? null;
+    $comment   = $data['comment'] ?? null;
+    $action    = $data['action'] ?? null;
 
-    $response = $reviewOps->addOrUpdateReview($userId, $movieData, $rating, $comment);
+    $response = $reviewOps->addOrUpdateReview($userId, $movieData, $rating, $comment, $action);
 
     respond($response);
 }

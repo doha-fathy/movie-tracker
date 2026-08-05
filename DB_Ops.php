@@ -171,8 +171,8 @@ class WatchlistOps
             } else {
                 // 2. insert movie
                 $stmt = $this->connection->prepare(
-                    "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description)
-                 VALUES (:tmdb_id, :title, :poster, :date, :desc)"
+                    "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description, curr_tmdb_rating, curr_tmdb_vote_count)
+                 VALUES (:tmdb_id, :title, :poster, :date, :desc, :tmdb_rate, :tmdb_count)"
                 );
 
                 $stmt->execute([
@@ -180,7 +180,9 @@ class WatchlistOps
                     "title" => $movieData['title'],
                     "poster" => $movieData['poster_path'],
                     "date" => $movieData['release_date'],
-                    "desc" => $movieData['description']
+                    "desc" => $movieData['description'],
+                    "tmdb_rate" => $movieData['tmdb_rate'],
+                    "tmdb_count" => $movieData['tmdb_count']
                 ]);
 
                 $movieId = $this->connection->lastInsertId();
@@ -573,17 +575,21 @@ class ReviewsOps
         }, $array);
     }
     // -------------------------------------------------------------------------
-    public function addOrUpdateReview($userId, $movieData, $rating, $comment)
+
+    //// NOTICE: you may get a race condition becuase 2 concurrent users may rate the same movie at the same time, Use 'select ... for update' statements
+    public function addOrUpdateReview($userId, $movieData, $rating, $comment, $action)
     {
         $userId = filter_var($userId, FILTER_VALIDATE_INT);
-        $rating = filter_var($rating, FILTER_VALIDATE_INT);
+        if ($rating !== null) {
+            $rating = filter_var($rating, FILTER_VALIDATE_INT);
+        }
 
         if (!$userId) {
             return $this->error("Invalid user. Please log in again.");
         }
 
-        if ($rating === false || $rating < 0 || $rating > 10) {
-            return $this->error("Rating must be between 0 and 10.");
+        if ($action === "rate" && ($rating === false || $rating < 1 || $rating > 10)) {
+            return $this->error("Rating must be between 1 and 10.");
         }
 
         if (empty($movieData['tmdb_id'])) {
@@ -595,7 +601,10 @@ class ReviewsOps
 
         try {
             // check movie
-            $stmt = $this->connection->prepare("SELECT id FROM movies WHERE tmdb_id = :tmdb_id");
+            $stmt = $this->connection->prepare(
+                "SELECT id, local_rating_avg, local_rating_count, curr_tmdb_rating, curr_tmdb_vote_count 
+                FROM movies 
+                WHERE tmdb_id = :tmdb_id");
             $stmt->execute(["tmdb_id" => $movieData['tmdb_id']]);
             $movie = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -638,9 +647,10 @@ class ReviewsOps
                 $local_rate = $movie['local_rating_avg'];
                 
             } else {
+                // insert the movie
                 $stmt = $this->connection->prepare(
-                    "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description)
-                 VALUES (:tmdb_id, :title, :poster, :date, :desc)"
+                    "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description, curr_tmdb_rating, curr_tmdb_vote_count)
+                    VALUES (:tmdb_id, :title, :poster, :date, :desc, :tmdb_rate, :tmdb_count)"
                 );
 
                 $stmt->execute([
@@ -648,7 +658,9 @@ class ReviewsOps
                     "title" => $movieData['title'] ?? '',
                     "poster" => $movieData['poster_path'] ?? '',
                     "date" => $movieData['release_date'] ?? null,
-                    "desc" => $movieData['description'] ?? ''
+                    "desc" => $movieData['description'] ?? '',
+                    "tmdb_rate" => $movieData['tmdb_rate'] ?? null,
+                    "tmdb_count" => $movieData['tmdb_count'] ?? null
                 ]);
 
                 $movieId = $this->connection->lastInsertId();
@@ -660,10 +672,10 @@ class ReviewsOps
 
             // insert or update review
             if($action === "rate"){
-            $stmt = $this->connection->prepare(
-                "INSERT INTO reviews (user_id, movie_id, rating, comment)
-             VALUES (:user_id, :movie_id, :rating, :comment)
-             ON DUPLICATE KEY UPDATE
+                $stmt = $this->connection->prepare(
+                    "INSERT INTO reviews (user_id, movie_id, rating)
+                    VALUES (:user_id, :movie_id, :rating)
+                    ON DUPLICATE KEY UPDATE
                     rating = :rating"
                 );
                 $stmt->execute([
@@ -678,14 +690,13 @@ class ReviewsOps
                     ON DUPLICATE KEY UPDATE
                     comment = :comment,
                     updated_at = CURRENT_TIMESTAMP"
-            );
+                );
 
-            $stmt->execute([
-                "user_id" => $userId,
-                "movie_id" => $movieId,
-                "rating" => $rating,
-                "comment" => $comment ?? ''
-            ]);
+                $stmt->execute([
+                    "user_id" => $userId,
+                    "movie_id" => $movieId,
+                    "comment" => $comment ?? ''
+                ]);
             }
 
             //-------------------------------------------------
@@ -714,10 +725,29 @@ class ReviewsOps
                 ]);
             }
 
+            $stmt = $this->connection->prepare(
+                "SELECT username, photo
+                FROM users
+                WHERE id = :user_id"
+            );
+
+            $stmt->execute(["user_id" => $userId]);
+
+            $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+            $username = $userData['username'];
+            $photo = $userData['photo'];
+
             //// commit the trans
             $this->connection->commit();
 
-            return $this->success(null, "Your review has been saved successfully.");
+            return $this->success([
+                'username' => $username,
+                'photo' => $photo,
+                'comment' => $comment,
+                'rating' => $rating,
+                'created_at' => date("Y-m-d H:i:s"),
+                'action' => $action
+            ], "Your review has been saved successfully.");
         } catch (PDOException $e) {
             //// rollback if error happens
             $this->connection->rollBack();

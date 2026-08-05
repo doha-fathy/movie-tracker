@@ -85,7 +85,9 @@ try {
                 'title' => $data['title'] ?? '',
                 'poster_path' => $data['poster_path'] ?? '',
                 'release_date' => $data['release_date'] ?? '',
-                'description' => $data['description'] ?? ''
+                'description' => $data['description'] ?? '',
+                'tmdb_rate' => $data['tmdb_rate'] ?? 0.0,
+                'tmdb_count' => $data['tmdb_count'] ?? 0
             ];
 
             $result = $watchlist->addToWatchlist($_SESSION['user_id'], $movieData);
