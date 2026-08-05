@@ -85,6 +85,8 @@ async function loadMovieDetails(movieId) {
           username: r.username,
           content: r.comment,
           createdAt: r.created_at,
+          rating: r.rating,
+          avatar: r.photo
         }));
         reviews = [...dbReviews, ...movieDetails.reviews];
       }
@@ -95,6 +97,20 @@ async function loadMovieDetails(movieId) {
 
   await loadDBReviews();
 
+  async function loadUserReview(){
+    const response = await fetch(`reviews_api.php?movie_id=${movieId}&mine=true`);
+    const data = await response.json();
+
+    return data.success ? data.data.review : null;
+  }
+  
+    async function loadMovieLocal(){
+    const response = await fetch(`reviews_api.php?movie_id=${movieId}&local=true`);
+    const data = await response.json();
+
+    return data.success ? data.data.locals : null;
+  } 
+
   // helpers
   function formatRuntime(minutes) {
     const hours = Math.floor(minutes / 60);
@@ -102,8 +118,17 @@ async function loadMovieDetails(movieId) {
     return `${hours}h ${mins}m`;
   }
 
-  function formatRating(rating) {
-    return `${Math.round(rating * 10)}%`;
+  async function formatRating(rating, vote_count) {
+    const locals = await loadMovieLocal();
+    let local_rate = locals?.local_rating_avg ?? 0;
+    let local_count = locals?.local_rating_count ?? 0;
+    console.log(local_rate);
+    console.log(local_count);
+    console.log(rating);
+    console.log(vote_count);
+    let total_rate = (rating * vote_count + local_rate * local_count) / (vote_count + local_count);
+    // return `${Math.round(total_rate * 10)}%`;
+    return {rate: total_rate.toFixed(1), count: local_count + vote_count};
   }
 
   function formatDate(dateStr) {
@@ -115,7 +140,7 @@ async function loadMovieDetails(movieId) {
   }
 
   const duration = formatRuntime(movie.runtime);
-  const rating = formatRating(movie.rating);
+  const rating = await formatRating(movie.rating, movie.vote_count);
 
   detailsContent.innerHTML = `
                      <div
@@ -152,23 +177,31 @@ async function loadMovieDetails(movieId) {
                 <p>${duration}</p>
                 </div>
                 <div class="flex gap-3 items-center">
-                <div
-                class="w-14 h-14 bg-[#C1246B] rounded-full flex justify-center items-center"
-                >
-                <div
-                class="w-12 h-12 bg-white rounded-full flex justify-center items-center text-[#C1246B] font-bold"
-                >
-                ${rating}
+                <div class="bg-white/10 rounded-xl px-4 py-3 flex items-center gap-3 backdrop-blur-sm border border-white/10">
+                <div class="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center text-black">
+                    <i class="fas fa-star text-lg"></i>
                 </div>
+
+                <div id="rateBadge">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-white text-xl font-bold">${rating.rate}</span>
+                        <span class="text-gray-300 text-sm">/10</span>
+                    </div>
+
+                    <div class="text-xs text-gray-400">
+                        ${rating.count.toLocaleString()} votes
+                    </div>
                 </div>
+            </div>
                 <p class="text-lg font-bold">Rating</p>
                 </div>
                 <div class="flex gap-5">
                 <div
+                id="rateBtn"
                 class="bg-[#C1246B] h-10 w-10 rounded-full flex justify-center items-center hover:cursor-pointer hover:text-[#C1246B] hover:bg-white transition-all duration-300"
-                title="Add to Favorite"
+                title="Rate"
                   >
-                  <i class="fa-solid fa-heart"></i>
+                  <i class="fa-solid fa-star-half-stroke"></i>
                   </div>
                   <div
                   id="watchlistBtn"
@@ -318,6 +351,8 @@ async function loadMovieDetails(movieId) {
           poster_path: movie.poster,
           release_date: movie.release_date || "",
           description: movie.overview || "",
+          tmdb_rate: movie.rating,
+          tmdb_count: movie.vote_count
         }),
       });
 
@@ -341,6 +376,175 @@ async function loadMovieDetails(movieId) {
     }
   });
 
+  function upsertReview(review) {
+    const index = reviews.findIndex(r => r.username === review.username);
+
+    if (index !== -1) {
+      if (review.rating !== undefined && review.rating !== null) {
+        reviews[index].rating = review.rating;
+      }
+
+      if (review.content !== undefined && review.content !== null) {
+        reviews[index].content = review.content;
+      }
+
+      if (review.createdAt !== undefined && review.createdAt !== null) {
+        reviews[index].createdAt = review.createdAt;
+      }
+    } else {
+      reviews.unshift(review);
+    }
+
+    renderReviews();
+  }
+
+  //------------------------ Rate button --------------------------------------
+
+  const rateBtn = document.getElementById("rateBtn");
+
+  rateBtn.addEventListener("click", async () => {
+    const review = await loadUserReview();
+    let rating = review?.rating ?? 0;
+    const result = await Swal.fire({
+      title: "",
+      html: `
+        <div class="flex flex-col items-center gap-4">
+          <i class="fa-solid fa-star text-6xl text-yellow-400"></i>
+
+          <h2 class="text-2xl font-bold">Rate this movie</h2>
+
+          <p class="text-gray-300">
+            How would you rate this title?
+          </p>
+
+          <div id="ratingStars" class="flex gap-2 text-3xl mt-2">
+            ${Array.from({ length: 10 }, (_, i) => `
+              <i class="fa-regular fa-star cursor-pointer hover:text-yellow-400 transition"
+                data-rating="${i + 1}"></i>
+            `).join("")}
+          </div>
+
+          <div id="selectedRating" class="text-lg font-semibold text-yellow-400 mt-2">
+            Select a rating
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Rate",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#C1246B",
+      cancelButtonColor: "rgba(255,255,255,0.1)",
+      background: "#1a0a12",
+      color: "#fff",
+      width: "520px",
+      didOpen: () => {
+
+        const stars = document.querySelectorAll("#ratingStars i");
+        const label = document.getElementById("selectedRating");
+
+        stars.forEach((star, index) => {
+          star.addEventListener("mouseenter", () => {
+            stars.forEach((s, i) => {
+              s.className = i <= index
+                ? "fa-solid fa-star cursor-pointer text-yellow-400 transition"
+                : "fa-regular fa-star cursor-pointer text-gray-400 transition";
+            });
+          });
+
+          star.addEventListener("click", () => {
+            rating = index + 1;
+            label.textContent = `${rating} / 10`;
+          });
+        });
+
+        document.getElementById("ratingStars")
+          .addEventListener("mouseleave", () => {
+            stars.forEach((s, i) => {
+              s.className = i < rating
+                ? "fa-solid fa-star cursor-pointer text-yellow-400 transition"
+                : "fa-regular fa-star cursor-pointer text-gray-400 transition";
+            });
+          });
+      }
+    });
+
+    if(result.isConfirmed){
+
+      const response = await fetch("reviews_api.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "rate",
+          movie: { tmdb_id: movieId,
+            title: movie.title,
+            poster_path: movie.poster,
+            release_date: movie.release_date || "",
+            description: movie.overview || "",
+            tmdb_rate: movie.rating,
+            tmdb_count: movie.vote_count },
+          rating: rating,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Server error");
+
+      const data = await response.json();
+
+      if (!data.success) {
+        Swal.fire({
+          title: "Error",
+          text: data.message,
+          icon: "error",
+          background: "#1a0a12",
+          color: "#fff",
+          confirmButtonColor: "#C1246B",
+        });
+      } else {
+        await Swal.fire({
+          title: "Rated!",
+          text: "Rating added successfuly.",
+          icon: "success",
+          background: "#1a0a12",
+          color: "#fff",
+          confirmButtonColor: "#C1246B",
+          timer: 2500,
+          showConfirmButton: false,
+        });
+
+        rating = await formatRating(movie.rating, movie.vote_count);
+         rateBadge = document.getElementById("rateBadge");
+         rateBadge.innerHTML = `
+         <div class="flex items-baseline gap-1">
+              <span class="text-white text-xl font-bold">${rating.rate}</span>
+              <span class="text-gray-300 text-sm">/10</span>
+          </div>
+
+          <div class="text-xs text-gray-400">
+              ${rating.count.toLocaleString()} votes
+          </div>
+         `
+          upsertReview({
+            username: data.data.username,
+            content: data.data.comment,
+            createdAt: data.data.created_at,
+            rating: data.data.rating,
+            avatar: data.data.photo,
+          });
+          reviewInput.value = "";        
+
+        // REASON: this part is too expensive for just adding a rate so it is commented
+        // await loadDBReviews();
+        // reviewInput.value = "";
+        // renderReviews();
+      }
+
+    } else {
+      return;
+    }
+
+  });
+
+  //---------------------------------------------------------------------------
 
   const genresDiv = document.getElementById("genres");
   const actorsDiv = document.getElementById("actorsDiv");
@@ -403,27 +607,41 @@ async function loadMovieDetails(movieId) {
   function renderReviews() {
     reviewsContainer.innerHTML = "";
 
-    const displayedReviews = expanded ? reviews : reviews.slice(0, 3);
+    const reviewsWithComments = reviews.filter(
+      review => review.content && review.content.trim() !== ""
+    );
+
+    const displayedReviews = expanded
+      ? reviewsWithComments
+      : reviewsWithComments.slice(0, 3);
 
     displayedReviews.forEach((review) => {
+
+      const photo = review.avatar && review.avatar.trim()
+      ? review.avatar
+      : "uploads/default.png";
+
       const reviewDate = formatDate(review.createdAt);
       reviewsContainer.innerHTML += `
       <div class="flex flex-col gap-3 border border-gray-400/25 rounded-xl p-4 shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 bg-gray-200/50">
 
         <div class="flex gap-2 text-yellow-500">
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star"></i>
+          ${Array.from({ length: review.rating }, () => `
+            <i class="fa-solid fa-star"></i>
+          `).join("")}
+          ${Array.from({ length: (10 - review.rating) }, () => `
+              <i class="fa-regular fa-star"></i>
+            `).join("")}
         </div>
         <p class="text-lg font-semibold">
           ${review.content}
         </p>
         <div class="flex gap-2">
-          <div class="bg-white flex justify-center items-center h-16 w-16 text-2xl rounded-full">
-            <i class="fa-solid fa-user"></i>
-          </div>
+          <img
+            src="${photo}"
+            alt="${review.username}"
+            class="h-16 w-16 rounded-full object-cover bg-white"
+          />
           <div>
             <p class="text-xl font-bold">${review.username}</p>
             <p class="text-sm text-gray-600 font-medium">
@@ -465,13 +683,13 @@ async function loadMovieDetails(movieId) {
     const content = reviewInput.value.trim();
     if (!content) return;
 
-    const authStatus = await checkAuthStatus();
-    if (!authStatus.authenticated) {
-      navigateTo("login");
-      return;
-    }
+    // const authStatus = await checkAuthStatus();
+    // if (!authStatus.authenticated) {
+    //   navigateTo("login");
+    //   return;
+    // }
 
-    const username = authStatus.user.username;
+    // const username = authStatus.user.username;
     const createdAt = new Date().toISOString().split("T")[0];
 
     try {
@@ -479,8 +697,16 @@ async function loadMovieDetails(movieId) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          movie: { tmdb_id: movieId },
-          rating: 6,
+          action: "comment",
+          movie: { tmdb_id: movieId,
+            title: movie.title,
+            poster_path: movie.poster,
+            release_date: movie.release_date || "",
+            description: movie.overview || "",
+            tmdb_rate: movie.rating,
+            tmdb_count: movie.vote_count
+           },
+          // rating: 6,
           comment: content,
         }),
       });
@@ -488,9 +714,19 @@ async function loadMovieDetails(movieId) {
       const data = await response.json();
 
       if (data.success) {
-        await loadDBReviews();
-        reviewInput.value = "";
-        renderReviews();
+        upsertReview({
+          username: data.data.username,
+          content: data.data.comment,
+          createdAt: data.data.created_at,
+          rating: data.data.rating,
+          avatar: data.data.photo,
+        });
+        reviewInput.value = ""; 
+        
+        // REASON: this part is too expensive for just adding a rate so it is commented
+        // await loadDBReviews();
+        // reviewInput.value = "";
+        // renderReviews();
       } else {
         alert(data.message || "Failed to submit review.");
       }
