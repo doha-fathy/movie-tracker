@@ -590,6 +590,9 @@ class ReviewsOps
             return $this->error("Movie information is missing.");
         }
 
+        //// begin a trans bc there are so many write queries in this function and we want atomicity
+        $this->connection->beginTransaction();
+
         try {
             // check movie
             $stmt = $this->connection->prepare("SELECT id FROM movies WHERE tmdb_id = :tmdb_id");
@@ -598,6 +601,42 @@ class ReviewsOps
 
             if ($movie) {
                 $movieId = $movie['id'];
+
+                // update the tmdb measure belmarra
+                $tmdb_rate = $movieData['tmdb_rate'];
+                $tmdb_count = $movieData['tmdb_count'];
+
+                $stmt = $this->connection->prepare(
+                    "UPDATE movies
+                    SET curr_tmdb_rating = :new_rate,
+                    curr_tmdb_vote_count = :new_count
+                    WHERE id = :movie_id");
+
+                $stmt->execute([
+                    'new_rate' => $tmdb_rate,
+                    'new_count' => $tmdb_count,
+                    'movie_id' => $movieId
+                ]);
+
+
+                // read old rating from the user (if he is just modifying his current one), we will use it further
+                $stmt = $this->connection->prepare(
+                "SELECT rating
+                FROM reviews
+                WHERE user_id = :user_id
+                AND movie_id = :movie_id");
+
+                $stmt->execute([
+                    'user_id' => $userId,
+                    "movie_id" => $movieId
+                ]);
+
+                $old_rate = $stmt->fetchColumn();
+
+                // local measure if the movie exists, if not exists, the coming 'else' will initialize them with 0
+                $local_count = $movie['local_rating_count'];
+                $local_rate = $movie['local_rating_avg'];
+                
             } else {
                 $stmt = $this->connection->prepare(
                     "INSERT INTO movies (tmdb_id, title, poster_path, release_date, description)
@@ -613,15 +652,32 @@ class ReviewsOps
                 ]);
 
                 $movieId = $this->connection->lastInsertId();
+
+                $local_count = 0;
+                $local_rate = 0.0;
+                $old_rate = false;
             }
 
             // insert or update review
+            if($action === "rate"){
             $stmt = $this->connection->prepare(
                 "INSERT INTO reviews (user_id, movie_id, rating, comment)
              VALUES (:user_id, :movie_id, :rating, :comment)
              ON DUPLICATE KEY UPDATE
-             rating = :rating,
-             comment = :comment"
+                    rating = :rating"
+                );
+                $stmt->execute([
+                    "user_id" => $userId,
+                    "movie_id" => $movieId,
+                    "rating" => $rating ?? null,
+                ]);
+            } else {
+                $stmt = $this->connection->prepare(
+                    "INSERT INTO reviews (user_id, movie_id, comment)
+                    VALUES (:user_id, :movie_id, :comment)
+                    ON DUPLICATE KEY UPDATE
+                    comment = :comment,
+                    updated_at = CURRENT_TIMESTAMP"
             );
 
             $stmt->execute([
@@ -630,10 +686,42 @@ class ReviewsOps
                 "rating" => $rating,
                 "comment" => $comment ?? ''
             ]);
+            }
+
+            //-------------------------------------------------
+            // now let's modify local measures
+            if($action === "rate"){
+                if($old_rate === false || $old_rate === null){
+                    $old_sum = $local_count * $local_rate;
+                    $local_count++;
+                    $local_rate = ($old_sum + $rating) / $local_count;
+                } else {
+                    $old_sum = $local_count * $local_rate;
+                    $new_sum = $old_sum - $old_rate + $rating;
+                    $local_rate = $new_sum / $local_count;
+                }
+
+                $stmt = $this->connection->prepare(
+                    "UPDATE movies
+                    SET local_rating_avg = :rate,
+                    local_rating_count = :count
+                    WHERE id = :id" 
+                );
+                $stmt->execute([
+                    'rate' => $local_rate,
+                    'count' => $local_count,
+                    'id' => $movieId
+                ]);
+            }
+
+            //// commit the trans
+            $this->connection->commit();
 
             return $this->success(null, "Your review has been saved successfully.");
         } catch (PDOException $e) {
-            return $this->error("Unable to save your review. Please try again later.");
+            //// rollback if error happens
+            $this->connection->rollBack();
+            return $this->error("Unable to save your review. Please try again later. comment = $comment, rate = $rating");
         }
     }
     // -------------------------------------------------------------------------
