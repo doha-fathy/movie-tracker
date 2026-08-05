@@ -49,6 +49,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $movieId = $movie['id'];
 
+if (isset($_GET['mine']) && $_GET['mine'] === 'true') {
+        if (!$userId) {
+            respond([
+                "success" => false,
+                "message" => "Login required"
+            ]);
+        }    
+    
+        $userReview = $reviewOps->getUserReview($userId, $movieId);
+
+        if (!$userReview['success']) {
+            respond($userReview);
+        }
+
+        respond([
+            "success" => true,
+            "data" => [
+                "review" => $userReview['data']
+            ]
+        ]);
+    } else if(isset($_GET['local']) && $_GET['local'] === 'true'){
+        $locals = $reviewOps->getLocal($movieId);
+
+        if (!$locals['success']) {
+            respond($locals);
+        }
+
+        respond([
+            "success" => true,
+            "data" => [
+                "locals" => $locals['data']
+            ]
+        ]);
+    } else {
     $allReviewsRes = $reviewOps->getMovieReviews($movieId);
 
     if (!$allReviewsRes['success']) {
