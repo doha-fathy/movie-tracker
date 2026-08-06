@@ -581,20 +581,19 @@ async function loadMovieDetails(movieId) {
 
   rateBtn.addEventListener("click", async () => {
     const review = await loadUserReview();
-    // stored rating is on a 0-10 scale; the modal picker is 0-5
-    const initialRating = review?.rating ? Math.round(review.rating / 2) : 0;
+    const initialRating = review?.rating ? Math.round(review.rating) : 0;
 
     const result = await showReviewModal({
       title: "Rate this movie",
       movieName: movie.title,
-      maxStars: 5,
+      maxStars: 10,
       initialRating,
       showComment: false,
     });
 
     if (!result.confirmed) return;
 
-    const ratingOutOfTen = result.rating * 2; // convert 1-5 scale to the app's 0-10 scale
+    const ratingOutOfTen = result.rating;
 
     try {
       const response = await fetch("reviews_api.php", {
@@ -733,21 +732,20 @@ async function loadMovieDetails(movieId) {
 
       const reviewDate = formatDate(review.createdAt);
 
-      // stored rating is 0-10; display as 0-5 stars
-      const starsOutOfFive = Math.round((review.rating || 0) / 2);
+      const starsOutOfTen = Math.round(review.rating || 0);
 
       reviewsContainer.innerHTML += `
       <div class="flex flex-col gap-3 border border-gray-400/25 rounded-xl p-4 shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 bg-gray-200/50">
 
         <div class="flex gap-2 text-yellow-500">
           ${Array.from(
-            { length: starsOutOfFive },
+            { length: starsOutOfTen },
             () => `
             <i class="fa-solid fa-star text-xl"></i>
           `,
           ).join("")}
           ${Array.from(
-            { length: 5 - starsOutOfFive },
+            { length: 10 - starsOutOfTen },
             () => `
               <i class="fa-regular fa-star text-xl"></i>
             `,
@@ -800,14 +798,14 @@ async function loadMovieDetails(movieId) {
     const result = await showReviewModal({
       title: "Add your review",
       movieName: movie.title,
-      maxStars: 5,
+      maxStars: 10,
       initialRating: 0,
       showComment: true,
     });
 
     if (!result.confirmed) return;
 
-    const ratingOutOfTen = result.rating * 2; // convert 1-5 scale to the app's 0-10 scale
+    const ratingOutOfTen = result.rating;
     const comment = result.comment;
 
     const movePayload = {
@@ -880,7 +878,8 @@ async function loadMovieDetails(movieId) {
       // Update local UI state with whichever response has the freshest comment/rating
       upsertReview({
         username: finalData.data.username,
-        content: comment && comment.trim() !== "" ? comment : finalData.data.comment,
+        content:
+          comment && comment.trim() !== "" ? comment : finalData.data.comment,
         createdAt: finalData.data.created_at,
         rating: rateData.data.rating, // always use the rating response's rating (authoritative)
         avatar: finalData.data.photo,
